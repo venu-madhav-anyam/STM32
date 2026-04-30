@@ -1,0 +1,255 @@
+#include "stm32l4xx_hal.h"
+#include <stdio.h>
+#include <string.h>
+
+/* -------- HANDLES -------- */
+I2C_HandleTypeDef hi2c2;
+UART_HandleTypeDef huart2;
+SPI_HandleTypeDef hspi1;
+
+/* -------- OPT3001 (I2C) -------- */
+#define OPT3001_ADDR        (0x47 << 1)
+#define OPT3001_REG_RESULT  0x00
+#define OPT3001_REG_CONFIG  0x01
+
+/* -------- W25Q FLASH (SPI) -------- */
+#define FLASH_CS_PORT       GPIOA
+#define FLASH_CS_PIN        GPIO_PIN_4
+#define W25Q_PAGE_SIZE      256
+#define W25Q_SECTOR_SIZE    4096
+
+#define CS_LOW()  HAL_GPIO_WritePin(FLASH_CS_PORT, FLASH_CS_PIN, GPIO_PIN_RESET)
+#define CS_HIGH() HAL_GPIO_WritePin(FLASH_CS_PORT, FLASH_CS_PIN, GPIO_PIN_SET)
+
+/* -------- PROTOTYPES -------- */
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_I2C2_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
+
+/* -------- PRINTF REDIRECT -------- */
+int _write(int file, char *ptr, int len) {
+    HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 100);
+    return len;
+}
+
+/* -------- OPT3001 FUNCTIONS -------- */
+void OPT3001_Init(void) {
+    uint8_t config[3] = { OPT3001_REG_CONFIG, 0xC4, 0x10 }; // Continuous conversion
+    HAL_I2C_Master_Transmit(&hi2c2, OPT3001_ADDR, config, 3, 100);
+}
+
+float OPT3001_ReadLux(void) {
+    uint8_t reg = OPT3001_REG_RESULT;
+    uint8_t data[2];
+    if (HAL_I2C_Master_Transmit(&hi2c2, OPT3001_ADDR, &reg, 1, 100) != HAL_OK) return -1.0f;
+    if (HAL_I2C_Master_Receive(&hi2c2, OPT3001_ADDR, data, 2, 100) != HAL_OK) return -1.0f;
+
+    uint16_t raw = (data[0] << 8) | data[1];
+    uint16_t exponent = (raw >> 12) & 0x0F;
+    uint16_t mantissa = raw & 0x0FFF;
+    return 0.01f * (1 << exponent) * mantissa;
+}
+
+/* -------- W25Q FLASH FUNCTIONS -------- */
+void W25Q_WriteEnable(void) {
+    uint8_t cmd = 0x06;
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, 100);
+    CS_HIGH();
+}
+
+void W25Q_WaitBusy(void) {
+    uint8_t cmd = 0x05;
+    uint8_t status;
+    do {
+        CS_LOW();
+        HAL_SPI_Transmit(&hspi1, &cmd, 1, 100);
+        HAL_SPI_Receive(&hspi1, &status, 1, 100);
+        CS_HIGH();
+    } while (status & 0x01);
+}
+
+uint16_t W25Q_ReadID(void) {
+    uint8_t cmd[4] = {0x90, 0x00, 0x00, 0x00};
+    uint8_t id[2];
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    HAL_SPI_Receive(&hspi1, id, 2, 100);
+    CS_HIGH();
+    return (id[0] << 8) | id[1];
+}
+
+void W25Q_EraseSector(uint32_t addr) {
+    uint8_t cmd[4] = { 0x20, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF };
+    W25Q_WriteEnable();
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    CS_HIGH();
+    W25Q_WaitBusy();
+}
+
+void W25Q_Write(uint32_t addr, uint8_t *data, uint16_t len) {
+    uint8_t cmd[4] = { 0x02, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF };
+    W25Q_WriteEnable();
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    HAL_SPI_Transmit(&hspi1, data, len, 100);
+    CS_HIGH();
+    W25Q_WaitBusy();
+}
+
+void W25Q_Read(uint32_t addr, uint8_t *data, uint16_t len) {
+    uint8_t cmd[4] = { 0x03, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF };
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    HAL_SPI_Receive(&hspi1, data, len, 100);
+    CS_HIGH();
+}
+
+/* -------- MAIN -------- */
+int main(void) {
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_I2C2_Init();
+    MX_SPI1_Init();
+
+    printf("--- STM32 Data Logger Start ---\r\n");
+
+    // Check Flash connection
+    uint16_t devID = W25Q_ReadID();
+    printf("Flash ID: 0x%04X\r\n", devID);
+
+    OPT3001_Init();
+    W25Q_EraseSector(0);
+
+    uint32_t flash_addr = 0;
+    char dat_buf[60];
+
+    while (1) {
+        float lux = OPT3001_ReadLux();
+        uint8_t buffer[4];
+        memcpy(buffer, &lux, 4);
+
+        // Reset if we hit end of sector (4KB)
+        if (flash_addr >= W25Q_SECTOR_SIZE - 4) {
+            W25Q_EraseSector(0);
+            flash_addr = 0;
+            printf("Sector reset.\r\n");
+        }
+
+        // Write to Flash
+        W25Q_Write(flash_addr, buffer, 4);
+
+        // Verify Read
+        float read_lux = 0;
+        uint8_t read_buf[4];
+        W25Q_Read(flash_addr, read_buf, 4);
+        memcpy(&read_lux, read_buf, 4);
+
+        printf("[%04lu] Sensor: %.2f Lux | Flash: %.2f Lux\r\n", flash_addr, lux, read_lux);
+
+        flash_addr += 4;
+        HAL_Delay(1000);
+    }
+}
+
+/* -------- HARDWARE INIT -------- */
+
+void MX_I2C2_Init(void) {
+    hi2c2.Instance = I2C2;
+    hi2c2.Init.Timing = 0x00303D5B;
+    hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    HAL_I2C_Init(&hi2c2);
+}
+
+void MX_SPI1_Init(void) {
+    hspi1.Instance = SPI1;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; // ~1MHz at 32MHz
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    HAL_SPI_Init(&hspi1);
+}
+
+void MX_USART2_UART_Init(void) {
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    HAL_UART_Init(&huart2);
+}
+
+void MX_GPIO_Init(void) {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_I2C2_CLK_ENABLE();
+    __HAL_RCC_SPI1_CLK_ENABLE();
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // UART2 (PA2, PA3)
+    GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // SPI1 (PA5=SCK, PA6=MISO, PA7=MOSI)
+    GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // CS Pin (PA4)
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    CS_HIGH();
+
+    // I2C2 (PB10=SCL, PB11=SDA) - Adjust pins if your board uses different ones
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C2;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+
+void SystemClock_Config(void) {
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+    RCC_OscInitStruct.MSICalibrationValue = 0;
+    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+    RCC_OscInitStruct.PLL.PLLM = 1;
+    RCC_OscInitStruct.PLL.PLLN = 16;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
+}
+
+void Error_Handler(void) {
+    while(1);
+}

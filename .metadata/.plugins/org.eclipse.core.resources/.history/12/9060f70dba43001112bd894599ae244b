@@ -1,0 +1,250 @@
+#include "stm32l4xx_hal.h"
+#include <stdio.h>
+#include <string.h>
+
+/* -------- HANDLES -------- */
+SPI_HandleTypeDef hspi1;
+UART_HandleTypeDef huart2;
+
+/* -------- CS PIN -------- */
+#define CS_PORT GPIOA
+#define CS_PIN  GPIO_PIN_4
+
+#define CS_LOW()  HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET)
+#define CS_HIGH() HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_SET)
+
+/* -------- COMMANDS -------- */
+#define CMD_JEDEC_ID     0x9F
+#define CMD_WRITE_ENABLE 0x06
+#define CMD_READ_STATUS  0x05
+#define CMD_READ_DATA    0x03
+#define CMD_PAGE_PROGRAM 0x02
+#define CMD_SECTOR_ERASE 0x20
+
+/* -------- PROTOTYPES -------- */
+void SystemClock_Config(void);
+void MX_GPIO_Init(void);
+void MX_SPI1_Init(void);
+void MX_USART2_UART_Init(void);
+
+/* -------- PRINTF -------- */
+int _write(int file, char *ptr, int len)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 100);
+    return len;
+}
+
+void Error_Handler(void) {
+	__disable_irq();
+	while (1) {
+	}
+}
+
+
+/* -------- FLASH FUNCTIONS -------- */
+
+void W25Q_WriteEnable(void)
+{
+    uint8_t cmd = CMD_WRITE_ENABLE;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, 100);
+    CS_HIGH();
+}
+
+uint8_t W25Q_ReadStatus(void)
+{
+    uint8_t cmd = CMD_READ_STATUS;
+    uint8_t status;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, 100);
+    HAL_SPI_Receive(&hspi1, &status, 1, 100);
+    CS_HIGH();
+
+    return status;
+}
+
+void W25Q_WaitBusy(void)
+{
+    while (W25Q_ReadStatus() & 0x01);
+}
+
+void W25Q_ReadID(void)
+{
+    uint8_t cmd = CMD_JEDEC_ID;
+    uint8_t id[3];
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, 100);
+    HAL_SPI_Receive(&hspi1, id, 3, 100);
+    CS_HIGH();
+
+    printf("JEDEC ID: %02X %02X %02X\r\n", id[0], id[1], id[2]);
+}
+
+void W25Q_EraseSector(uint32_t addr)
+{
+    uint8_t cmd[4];
+
+    W25Q_WriteEnable();
+
+    cmd[0] = CMD_SECTOR_ERASE;
+    cmd[1] = (addr >> 16) & 0xFF;
+    cmd[2] = (addr >> 8) & 0xFF;
+    cmd[3] = addr & 0xFF;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    CS_HIGH();
+
+    W25Q_WaitBusy();
+}
+
+void W25Q_Write(uint32_t addr, uint8_t *data, uint16_t len)
+{
+    W25Q_WriteEnable();
+
+    uint8_t cmd[4];
+    cmd[0] = CMD_PAGE_PROGRAM;
+    cmd[1] = (addr >> 16) & 0xFF;
+    cmd[2] = (addr >> 8) & 0xFF;
+    cmd[3] = addr & 0xFF;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    HAL_SPI_Transmit(&hspi1, data, len, 100);
+    CS_HIGH();
+
+    W25Q_WaitBusy();
+}
+
+void W25Q_Read(uint32_t addr, uint8_t *data, uint16_t len)
+{
+    uint8_t cmd[4];
+
+    cmd[0] = CMD_READ_DATA;
+    cmd[1] = (addr >> 16) & 0xFF;
+    cmd[2] = (addr >> 8) & 0xFF;
+    cmd[3] = addr & 0xFF;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, 100);
+    HAL_SPI_Receive(&hspi1, data, len, 100);
+    CS_HIGH();
+}
+
+/* -------- MAIN -------- */
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+
+    MX_GPIO_Init();
+    MX_SPI1_Init();
+    MX_USART2_UART_Init();
+
+    printf("FLASH TEST START\r\n");
+
+    /* ---- 1. READ ID ---- */
+    W25Q_ReadID();
+
+    /* ---- 2. ERASE ---- */
+    W25Q_EraseSector(0x000000);
+
+    uint8_t check[4];
+    W25Q_Read(0x000000, check, 4);
+
+    printf("After erase: %02X %02X %02X %02X\r\n",
+           check[0], check[1], check[2], check[3]);
+
+    /* ---- 3. WRITE ---- */
+    uint8_t write_data[4] = {0x11, 0x22, 0x33, 0x44};
+    W25Q_Write(0x000000, write_data, 4);
+
+    /* ---- 4. READ BACK ---- */
+    uint8_t read_data[4];
+    W25Q_Read(0x000000, read_data, 4);
+
+    printf("Read: %02X %02X %02X %02X\r\n",
+           read_data[0], read_data[1], read_data[2], read_data[3]);
+
+    while (1)
+    {
+    }
+}
+
+void SystemClock_Config(void)
+{
+    RCC_OscInitTypeDef osc = {0};
+    RCC_ClkInitTypeDef clk = {0};
+
+    osc.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+    osc.MSIState = RCC_MSI_ON;
+    osc.MSIClockRange = RCC_MSIRANGE_6;
+    HAL_RCC_OscConfig(&osc);
+
+    clk.ClockType = RCC_CLOCKTYPE_SYSCLK;
+    clk.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+    HAL_RCC_ClockConfig(&clk, FLASH_LATENCY_0);
+}
+
+void MX_GPIO_Init(void)
+{
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    /* SPI Pins: PA5 SCK, PA6 MISO, PA7 MOSI */
+    GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;  // ⭐ IMPORTANT
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* CS Pin PA4 */
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+}
+
+void MX_SPI1_Init(void)
+{
+    __HAL_RCC_SPI1_CLK_ENABLE();
+
+    hspi1.Instance = SPI1;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase    = SPI_PHASE_1EDGE;
+
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+
+    HAL_SPI_Init(&hspi1);
+}
+
+void MX_USART2_UART_Init(void)
+{
+    __HAL_RCC_USART2_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+
+    HAL_UART_Init(&huart2);
+}

@@ -1,0 +1,18 @@
+
+#ifndef UART_H
+#define UART_H
+
+#include "stm32f4xx_hal.h"
+
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+
+void uart1_init(void);
+void uart2_init(void);
+
+void uart1_send(char *msg);
+void uart2_send(char *msg);
+
+void uart_start_rx_it(UART_HandleTypeDef *huart);
+
+#endif

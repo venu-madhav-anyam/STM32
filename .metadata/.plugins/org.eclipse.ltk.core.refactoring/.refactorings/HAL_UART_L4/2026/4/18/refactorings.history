@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;HAL_UART_L4/Src/system_stm32lfxx.c&apos; to &apos;system_stm32l4xx.c&apos;" description="Rename resource &apos;system_stm32lfxx.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Src/system_stm32lfxx.c" name="system_stm32l4xx.c" stamp="1777275712688" updateReferences="true"/>
+</session>

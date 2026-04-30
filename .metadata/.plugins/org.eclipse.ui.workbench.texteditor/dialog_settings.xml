@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<item key="replaceBarOpen" value="true"/>
+	<list key="replacehistory">
+		<item value="GPIO_Init_Struct"/>
+	</list>
+	<list key="searchhistory">
+		<item value="Error_Handler"/>
+		<item value="GPIO_A_Init"/>
+	</list>
+</section>

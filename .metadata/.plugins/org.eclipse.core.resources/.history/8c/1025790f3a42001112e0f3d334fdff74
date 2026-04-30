@@ -1,0 +1,83 @@
+#include <stdint.h>
+#include "stm32l4xx_hal.h"
+
+
+I2C_HandleTypeDef hi2c1;
+
+const uint32_t MSIRangeTable[] = { 100000, 200000, 400000, 800000, 1000000,
+		2000000, 4000000, 8000000, 16000000, 24000000, 32000000, 48000000 };
+
+void SysTick_Handler(void)
+{
+    HAL_IncTick();
+}
+
+
+void SystemClock_Config(void)
+{
+    RCC_OscInitTypeDef osc = {0};
+    RCC_ClkInitTypeDef clk = {0};
+
+    osc.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+    osc.MSIState = RCC_MSI_ON;
+    osc.MSIClockRange = RCC_MSIRANGE_8;
+    osc.PLL.PLLState = RCC_PLL_NONE;
+
+    HAL_RCC_OscConfig(&osc);
+
+    clk.ClockType = RCC_CLOCKTYPE_SYSCLK |
+                    RCC_CLOCKTYPE_HCLK |
+                    RCC_CLOCKTYPE_PCLK1 |
+                    RCC_CLOCKTYPE_PCLK2;
+
+    clk.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+    clk.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    clk.APB1CLKDivider = RCC_HCLK_DIV1;
+    clk.APB2CLKDivider = RCC_HCLK_DIV1;
+
+    HAL_RCC_ClockConfig(&clk, FLASH_LATENCY_0);
+}
+
+
+void I2C1_Init(void)
+{
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_I2C1_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // PB6 = SCL, PB7 = SDA
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;  // ⭐ Open Drain
+    GPIO_InitStruct.Pull = GPIO_PULLUP;      // ⭐ Important
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    hi2c1.Instance = I2C1;
+    hi2c1.Init.Timing = 0x00303D5B;  // 100 kHz (for 16 MHz clock)
+    hi2c1.Init.OwnAddress1 = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+
+    HAL_I2C_Init(&hi2c1);
+}
+
+
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+
+    I2C1_Init();
+
+    uint8_t data[] = "Hi";
+
+    while (1)
+    {
+        // Send to slave address 0x50
+        HAL_I2C_Master_Transmit(&hi2c1, (0x50 << 1), data, 2, 100);
+
+        HAL_Delay(1000);
+    }
+}

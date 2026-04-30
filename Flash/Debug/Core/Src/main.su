@@ -1,0 +1,14 @@
+../Core/Src/main.c:37:6:Error_Handler	4	static,ignoring_inline_asm
+../Core/Src/main.c:43:6:W25_Chip_Erase	16	static
+../Core/Src/main.c:61:5:main	152	static
+../Core/Src/main.c:115:6:UART_Log	16	static
+../Core/Src/main.c:121:6:W25_Write_Enable	16	static
+../Core/Src/main.c:136:6:W25_Wait_Busy	24	static
+../Core/Src/main.c:149:6:W25_Read_ID	32	static
+../Core/Src/main.c:166:6:W25_Sector_Erase	24	static
+../Core/Src/main.c:179:6:W25_Page_Program	32	static
+../Core/Src/main.c:193:6:W25_Read	48	static
+../Core/Src/main.c:218:13:MX_SPI1_Init	16	static
+../Core/Src/main.c:234:13:MX_USART2_UART_Init	40	static
+../Core/Src/main.c:255:13:MX_GPIO_Init	32	static
+../Core/Src/main.c:280:6:SystemClock_Config	96	static

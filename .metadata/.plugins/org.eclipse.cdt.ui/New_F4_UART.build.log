@@ -1,0 +1,10 @@
+14:09:53 **** Incremental Build of configuration Debug for project New_F4_UART ****
+make -j12 all 
+arm-none-eabi-size  New_F4_UART.elf 
+   text	   data	    bss	    dec	    hex	filename
+   5580	     16	   1640	   7236	   1c44	New_F4_UART.elf
+Finished building: default.size.stdout
+ 
+
+14:09:54 Build Finished. 0 errors, 0 warnings. (took 204ms)
+

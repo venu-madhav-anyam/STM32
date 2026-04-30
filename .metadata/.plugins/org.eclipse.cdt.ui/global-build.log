@@ -1,0 +1,7 @@
+10:50:10 **** Incremental Build of configuration Debug for project Interfacing_SPI_I2C_UART ****
+make -j12 all 
+arm-none-eabi-size  Interfacing_SPI_I2C_UART.elf 
+   text	   data	    bss	    dec	    hex	filename
+  34540	    468	   2236	  37244	   917c	Interfacing_SPI_I2C_UART.elf
+Finished building: default.size.stdout
+ 

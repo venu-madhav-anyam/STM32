@@ -1,0 +1,13 @@
+#ifndef UART_H
+#define UART_H
+
+#include "stm32f4xx_hal.h"
+
+extern UART_HandleTypeDef huart2;
+
+void uart_init(void);
+void uart_start_rx_it(void);
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+
+#endif
+

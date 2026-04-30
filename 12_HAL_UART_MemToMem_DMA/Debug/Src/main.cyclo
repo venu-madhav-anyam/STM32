@@ -1,0 +1,5 @@
+../Src/main.c:26:6:SysTick_Handler	1
+../Src/main.c:30:6:SystemClock_Config	1
+../Src/main.c:55:6:DMA1_Channel6_IRQHandler	1
+../Src/main.c:60:6:USART2_IRQHandler	2
+../Src/main.c:71:5:main	1

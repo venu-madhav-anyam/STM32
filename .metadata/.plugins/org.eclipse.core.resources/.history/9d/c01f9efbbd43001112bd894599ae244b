@@ -1,0 +1,151 @@
+#include "main.h"
+#include <stdio.h>
+#include <string.h>
+
+/* -------- HANDLES -------- */
+SPI_HandleTypeDef hspi1;
+UART_HandleTypeDef huart2;
+
+/* -------- CS PIN -------- */
+#define CS_PORT GPIOA
+#define CS_PIN  GPIO_PIN_4
+
+#define CS_LOW()  HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET)
+#define CS_HIGH() HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_SET)
+
+/* -------- PRINTF -------- */
+int _write(int file, char *ptr, int len)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 100);
+    return len;
+}
+
+/* -------- FLASH -------- */
+
+void Flash_ReadID(void)
+{
+    uint8_t cmd = 0x9F;
+    uint8_t id[3];
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi1, id, 3, HAL_MAX_DELAY);
+    CS_HIGH();
+
+    printf("JEDEC ID: %02X %02X %02X\r\n", id[0], id[1], id[2]);
+}
+
+void Flash_WriteEnable(void)
+{
+    uint8_t cmd = 0x06;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+    CS_HIGH();
+}
+
+uint8_t Flash_ReadStatus(void)
+{
+    uint8_t cmd = 0x05;
+    uint8_t dummy = 0xFF;
+    uint8_t status;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+    HAL_SPI_TransmitReceive(&hspi1, &dummy, &status, 1, HAL_MAX_DELAY);
+    CS_HIGH();
+
+    return status;
+}
+
+void Flash_WaitBusy(void)
+{
+    while (Flash_ReadStatus() & 0x01);
+}
+
+void Flash_Erase(uint32_t addr)
+{
+    uint8_t cmd[4];
+
+    Flash_WriteEnable();
+
+    cmd[0] = 0x20;
+    cmd[1] = (addr >> 16) & 0xFF;
+    cmd[2] = (addr >> 8) & 0xFF;
+    cmd[3] = addr & 0xFF;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+    CS_HIGH();
+
+    HAL_Delay(50);
+    Flash_WaitBusy();
+}
+
+void Flash_Write(uint32_t addr, uint8_t *data, uint16_t len)
+{
+    uint8_t cmd[4];
+
+    Flash_WriteEnable();
+
+    cmd[0] = 0x02;
+    cmd[1] = (addr >> 16) & 0xFF;
+    cmd[2] = (addr >> 8) & 0xFF;
+    cmd[3] = addr & 0xFF;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(&hspi1, data, len, HAL_MAX_DELAY);
+    CS_HIGH();
+
+    Flash_WaitBusy();
+}
+
+void Flash_Read(uint32_t addr, uint8_t *data, uint16_t len)
+{
+    uint8_t cmd[4];
+
+    cmd[0] = 0x03;
+    cmd[1] = (addr >> 16) & 0xFF;
+    cmd[2] = (addr >> 8) & 0xFF;
+    cmd[3] = addr & 0xFF;
+
+    CS_LOW();
+    HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+    HAL_SPI_Receive(&hspi1, data, len, HAL_MAX_DELAY);
+    CS_HIGH();
+}
+
+/* -------- MAIN -------- */
+
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+
+    MX_GPIO_Init();
+    MX_SPI1_Init();
+    MX_USART2_UART_Init();
+
+    printf("FLASH TEST START\r\n");
+
+    uint8_t write_data[4] = {0x11, 0x22, 0x33, 0x44};
+    uint8_t read_data[4];
+
+    while (1)
+    {
+        Flash_ReadID();
+
+        Flash_Erase(0x000000);
+
+        Flash_Write(0x000000, write_data, 4);
+
+        Flash_Read(0x000000, read_data, 4);
+
+        printf("Read: %02X %02X %02X %02X\r\n",
+               read_data[0], read_data[1],
+               read_data[2], read_data[3]);
+
+        HAL_Delay(1000);
+    }
+}

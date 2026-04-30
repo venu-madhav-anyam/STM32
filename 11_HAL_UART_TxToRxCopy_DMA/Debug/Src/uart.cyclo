@@ -1,0 +1,4 @@
+../Src/uart.c:10:6:uart_init	1
+../Src/uart.c:66:6:uart_start_dma	1
+../Src/uart.c:70:6:uart_process_data	2
+../Src/uart.c:82:5:_write	1

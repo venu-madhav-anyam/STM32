@@ -1,0 +1,83 @@
+16:14:54 **** Build of configuration Debug for project NEW_UART ****
+make -j12 all 
+arm-none-eabi-gcc -mcpu=cortex-m4 -g3 -DDEBUG -c -x assembler-with-cpp -MMD -MP -MF"Startup/startup_stm32f411retx.d" -MT"Startup/startup_stm32f411retx.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Startup/startup_stm32f411retx.o" "../Startup/startup_stm32f411retx.s"
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/main.o"
+arm-none-eabi-gcc "../Src/syscalls.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/syscalls.d" -MT"Src/syscalls.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/syscalls.o"
+arm-none-eabi-gcc "../Src/sysmem.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/sysmem.d" -MT"Src/sysmem.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/sysmem.o"
+arm-none-eabi-gcc "../Src/system_stm32lfxx.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/system_stm32lfxx.d" -MT"Src/system_stm32lfxx.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/system_stm32lfxx.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F411xx -c -I../Inc -I"D:/STM32/NEW_UART/Drivers/CMSIS/Include" -I"D:/STM32/NEW_UART/Drivers/CMSIS/Device/ST/STM32F4xx/Include" -I"D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.o"
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Src/main.c:20:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Src/subdir.mk:28: Src/main.o] Error 1
+make: *** Waiting for unfinished jobs....
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c:36:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c:81:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c:39:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o] Error 1
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o] Error 1
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.o] Error 1
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c:86:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c:97:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c:76:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.o] Error 1
+In file included from ../Inc/stm32f4xx_hal_conf.h:280,
+                 from D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c:62:
+D:/STM32/NEW_UART/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:27:10: fatal error: stm32f4xx_hal_def.h: No such file or directory
+   27 | #include "stm32f4xx_hal_def.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.o] Error 1
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o] Error 1
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:61: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.o] Error 1
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
+
+16:14:55 Build Failed. 17 errors, 0 warnings. (took 1s.80ms)
+

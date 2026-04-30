@@ -1,0 +1,275 @@
+#include "stm32l4xx_hal.h"
+#include <stdio.h>
+#include <string.h>
+
+/* ===================== W25Q COMMANDS ===================== */
+#define W25Q_WRITE_ENABLE      0x06
+#define W25Q_READ_STATUS_REG1  0x05
+#define W25Q_READ_DATA         0x03
+#define W25Q_PAGE_PROGRAM      0x02
+#define W25Q_SECTOR_ERASE      0x20
+#define W25Q_CHIP_ID           0x90
+
+/* ===================== GPIO (CS) ===================== */
+#define W25_CS_PORT   GPIOA
+#define W25_CS_PIN    GPIO_PIN_4
+#define W25_CS_SELECT()    HAL_GPIO_WritePin(W25_CS_PORT, W25_CS_PIN, GPIO_PIN_RESET)
+#define W25_CS_DESELECT()  HAL_GPIO_WritePin(W25_CS_PORT, W25_CS_PIN, GPIO_PIN_SET)
+
+/* ===================== HANDLES ===================== */
+SPI_HandleTypeDef hspi1;
+UART_HandleTypeDef huart2;
+
+/* ===================== PROTOTYPES ===================== */
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
+
+void UART_Log(const char *msg);
+void W25_Write_Enable(void);
+void W25_Wait_Busy(void);
+void W25_Read_ID(uint8_t *mid, uint8_t *did);
+void W25_Sector_Erase(uint32_t addr);
+void W25_Page_Program(uint32_t addr, const uint8_t *data, uint16_t len);
+void W25_Read(uint32_t addr, uint8_t *data, uint16_t len);
+
+void Error_Handler(void) {
+	__disable_irq();
+	while (1) {
+	}
+}
+
+void W25_Chip_Erase(void) {
+	uint8_t cmd = 0xC7;
+
+	W25_Write_Enable();
+
+	W25_CS_SELECT();
+	HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+	UART_Log("CHIP ERASED...\r\n");
+	W25_CS_DESELECT();
+
+	/* ⚠️ This takes time (1–10 seconds) */
+	W25_Wait_Busy();
+}
+
+/* ===================== MAIN ===================== */
+int main(void) {
+	HAL_Init();
+	SystemClock_Config();
+
+	MX_GPIO_Init();
+	MX_SPI1_Init();
+	MX_USART2_UART_Init();
+
+	UART_Log("\r\n--- W25Qxx Chip Erase Test (L476) ---\r\n");
+
+	uint8_t wData[] = "STM32-W25Qxx-Test";
+	uint8_t rData[sizeof(wData)] = { 0 };
+
+	uint8_t mid = 0, did = 0;
+	W25_Read_ID(&mid, &did);
+
+	char msg[80];
+	sprintf(msg, "Manufacturer ID: 0x%02X, Device ID: 0x%02X\r\n", mid, did);
+	UART_Log(msg);
+
+	/* -------- CHIP ERASE -------- */
+	UART_Log("Performing CHIP ERASE...\r\n");
+	W25_Chip_Erase();
+	UART_Log("Chip Erase Done.\r\n");
+
+	/* -------- VERIFY ERASE -------- */
+	uint8_t check[10];
+	W25_Read(0x000000, check, 10);
+
+	UART_Log("After erase: ");
+	for (int i = 0; i < 10; i++) {
+		char buf[5];
+		sprintf(buf, "%02X ", check[i]);
+		UART_Log(buf);
+	}
+	UART_Log("\r\n");
+
+	/* -------- WRITE -------- */
+	UART_Log("Writing Data: STM32-W25Qxx-Test\r\n");
+	W25_Page_Program(0x000000, wData, sizeof(wData));
+
+	/* -------- READ BACK -------- */
+	UART_Log("Reading Data back...\r\n");
+	W25_Read(0x000000, rData, sizeof(wData));
+
+	UART_Log("Received Data: ");
+	UART_Log((char*) rData);
+	UART_Log("\r\n--- Test Complete ---\r\n");
+
+	while (1) {
+		HAL_Delay(1000);
+	}
+}
+/* ===================== UART ===================== */
+void UART_Log(const char *msg) {
+	HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+/* ===================== W25Qxx DRIVER ===================== */
+
+void W25_Write_Enable(void) {
+	uint8_t cmd = W25Q_WRITE_ENABLE;
+	W25_CS_SELECT();
+	HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+	W25_CS_DESELECT();
+}
+
+void W25_Wait_Busy(void) {
+	uint8_t cmd = W25Q_READ_STATUS_REG1;
+	uint8_t dummy = 0xFF;
+	uint8_t status;
+
+	do {
+		W25_CS_SELECT();
+		HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+		HAL_SPI_TransmitReceive(&hspi1, &dummy, &status, 1, HAL_MAX_DELAY);
+		W25_CS_DESELECT();
+	} while (status & 0x01);  // BUSY bit
+}
+
+void W25_Read_ID(uint8_t *mid, uint8_t *did) {
+	uint8_t cmd = W25Q_CHIP_ID;
+	uint8_t addr[3] = { 0, 0, 0 };
+	uint8_t id[2];
+
+	W25_CS_SELECT();
+	HAL_SPI_Transmit(&hspi1, &cmd, 1, HAL_MAX_DELAY);
+	HAL_SPI_Transmit(&hspi1, addr, 3, HAL_MAX_DELAY);
+	HAL_SPI_Receive(&hspi1, id, 2, HAL_MAX_DELAY);
+	W25_CS_DESELECT();
+
+	*mid = id[0];
+	*did = id[1];
+}
+
+void W25_Sector_Erase(uint32_t addr) {
+	uint8_t cmd[4] = {
+	W25Q_SECTOR_ERASE, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF };
+
+	W25_Write_Enable();
+
+	W25_CS_SELECT();
+	HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+	W25_CS_DESELECT();
+
+	W25_Wait_Busy();
+}
+
+void W25_Page_Program(uint32_t addr, const uint8_t *data, uint16_t len) {
+	uint8_t cmd[4] = {
+	W25Q_PAGE_PROGRAM, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF };
+
+	W25_Write_Enable();
+
+	W25_CS_SELECT();
+	HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) data, len, HAL_MAX_DELAY);
+	W25_CS_DESELECT();
+
+	W25_Wait_Busy();
+}
+
+void W25_Read(uint32_t addr, uint8_t *data, uint16_t len) {
+	uint8_t cmd[4] = {
+	W25Q_READ_DATA, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF };
+
+	W25_CS_SELECT();
+	HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+	HAL_SPI_Receive(&hspi1, data, len, HAL_MAX_DELAY);
+	W25_CS_DESELECT();
+}
+
+/* ===================== INIT ===================== */
+
+static void MX_SPI1_Init(void) {
+	__HAL_RCC_SPI1_CLK_ENABLE();
+
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; // stable
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+
+	HAL_SPI_Init(&hspi1);
+}
+
+static void MX_USART2_UART_Init(void) {
+	__HAL_RCC_USART2_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+
+	/* PA2 -> TX, PA3 -> RX */
+	GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+
+	HAL_UART_Init(&huart2);
+}
+
+static void MX_GPIO_Init(void) {
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+
+	/* SPI1: PA5=SCK, PA6=MISO, PA7=MOSI */
+	GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	/* CS pin PA4 */
+	GPIO_InitStruct.Pin = GPIO_PIN_4;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	W25_CS_DESELECT();
+}
+
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+	RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+	RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+	RCC_OscInitStruct.PLL.PLLM = 1;
+	RCC_OscInitStruct.PLL.PLLN = 40;
+	RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+
+	HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK |
+	RCC_CLOCKTYPE_HCLK |
+	RCC_CLOCKTYPE_PCLK1 |
+	RCC_CLOCKTYPE_PCLK2;
+
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+
+	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
+}

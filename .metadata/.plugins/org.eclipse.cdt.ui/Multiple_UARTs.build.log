@@ -1,0 +1,10 @@
+11:51:13 **** Incremental Build of configuration Debug for project Multiple_UARTs ****
+make -j12 all 
+arm-none-eabi-size  Multiple_UARTs.elf 
+   text	   data	    bss	    dec	    hex	filename
+   8416	     12	   1716	  10144	   27a0	Multiple_UARTs.elf
+Finished building: default.size.stdout
+ 
+
+11:51:14 Build Finished. 0 errors, 0 warnings. (took 263ms)
+
