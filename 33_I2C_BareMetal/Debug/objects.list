@@ -1,0 +1,7 @@
+"./Drivers/src/stm32l476xx_gpio.o"
+"./Drivers/src/stm32l476xx_i2c.o"
+"./Drivers/src/stm32l476xx_spi.o"
+"./Src/main.o"
+"./Src/syscalls.o"
+"./Src/sysmem.o"
+"./Startup/startup_stm32l476rgtx.o"

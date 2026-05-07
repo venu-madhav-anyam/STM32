@@ -1,0 +1,10 @@
+14:30:20 **** Incremental Build of configuration Debug for project 31_SPI_BareMetal ****
+make -j12 all 
+arm-none-eabi-size  31_SPI_BareMetal.elf 
+   text	   data	    bss	    dec	    hex	filename
+   2712	      4	   1580	   4296	   10c8	31_SPI_BareMetal.elf
+Finished building: default.size.stdout
+ 
+
+14:30:21 Build Finished. 0 errors, 0 warnings. (took 162ms)
+

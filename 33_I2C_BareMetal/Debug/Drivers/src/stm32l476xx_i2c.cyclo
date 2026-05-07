@@ -1,0 +1,4 @@
+../Drivers/src/stm32l476xx_i2c.c:10:6:I2C_PeriClockControl	5
+../Drivers/src/stm32l476xx_i2c.c:24:6:I2C_Init	1
+../Drivers/src/stm32l476xx_i2c.c:41:6:I2C_MasterSendData	4
+../Drivers/src/stm32l476xx_i2c.c:79:6:I2C_MasterReceiveData	4

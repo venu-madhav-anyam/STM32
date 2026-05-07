@@ -1,0 +1,13 @@
+/*
+ * stm32l476xx_i2c.h
+ *
+ *  Created on: May 6, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#ifndef INC_STM32L476XX_I2C_H_
+#define INC_STM32L476XX_I2C_H_
+
+
+
+#endif /* INC_STM32L476XX_I2C_H_ */

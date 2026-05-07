@@ -156,7 +156,7 @@ int main(void)
       {
           HAL_Delay(200);
 
-          distance = 11220;
+          distance = ultrasonic_read();
 
           sprintf(msg, "Distance = %lu cm\r\n", distance);
           HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);

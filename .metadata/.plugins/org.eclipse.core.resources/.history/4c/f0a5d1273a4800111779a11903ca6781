@@ -1,0 +1,85 @@
+/*
+ * stm32l476xx_spi.c
+ *
+ *  Created on: May 5, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "stm32l476xx_spi.h"
+
+/* ================= CLOCK ================= */
+
+void SPI_PeriClockControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi) {
+	if (EnOrDi == ENABLE) {
+		if (pSPIx == SPI1)
+			SPI1_CLK_ENABLE();
+	}
+}
+
+/* ================= INIT ================= */
+
+void SPI_Init(SPI_Handle_t *pSPIHandle) {
+	uint32_t temp = 0;
+
+	SPI_PeriClockControl(pSPIHandle->pSPIx, ENABLE);
+
+	/* Device Mode */
+	temp |= (pSPIHandle->SPI_Config.DeviceMode << 2);
+
+	/* Baud rate */
+	temp |= (pSPIHandle->SPI_Config.SclkSpeed << 3);
+
+	/* CPOL */
+	temp |= (pSPIHandle->SPI_Config.CPOL << 1);
+
+	/* CPHA */
+	temp |= (pSPIHandle->SPI_Config.CPHA << 0);
+
+	/* DFF */
+	temp |= (pSPIHandle->SPI_Config.DFF << 11);
+
+	/* SSM */
+	temp |= (pSPIHandle->SPI_Config.SSM << 9);
+
+	pSPIHandle->pSPIx->CR1 = temp;
+
+	/* SSI = 1 if SSM enabled */
+	if (pSPIHandle->SPI_Config.SSM == SPI_SSM_EN)
+		pSPIHandle->pSPIx->CR1 |= (1 << 8);
+
+	/* Enable SPI */
+	pSPIHandle->pSPIx->CR1 |= (1 << 6);
+}
+
+/* ================= SEND ================= */
+
+void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len) {
+	while (Len > 0) {
+		while (!(pSPIx->SR & SPI_TXE_FLAG))
+			;
+
+		pSPIx->DR = *pTxBuffer;
+		pTxBuffer++;
+		Len--;
+	}
+
+	while (pSPIx->SR & SPI_BUSY_FLAG)
+		;
+}
+
+/* ================= RECEIVE ================= */
+
+void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len) {
+	while (Len > 0) {
+		while (!(pSPIx->SR & SPI_TXE_FLAG))
+			;
+		pSPIx->DR = 0xFF;
+
+		while (!(pSPIx->SR & SPI_RXNE_FLAG))
+			;
+		*pRxBuffer = pSPIx->DR;
+
+		pRxBuffer++;
+		Len--;
+	}
+}

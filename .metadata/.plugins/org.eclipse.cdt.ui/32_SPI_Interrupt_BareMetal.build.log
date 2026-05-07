@@ -1,0 +1,10 @@
+09:53:43 **** Build of configuration Debug for project 32_SPI_Interrupt_BareMetal ****
+make -j12 all 
+arm-none-eabi-size  32_SPI_Interrupt_BareMetal.elf 
+   text	   data	    bss	    dec	    hex	filename
+   3484	      4	   1604	   5092	   13e4	32_SPI_Interrupt_BareMetal.elf
+Finished building: default.size.stdout
+ 
+
+09:53:43 Build Finished. 0 errors, 0 warnings. (took 155ms)
+

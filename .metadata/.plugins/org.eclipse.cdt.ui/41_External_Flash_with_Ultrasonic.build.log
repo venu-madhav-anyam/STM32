@@ -1,0 +1,17 @@
+12:23:41 **** Incremental Build of configuration Debug for project 41_External_Flash_with_Ultrasonic ****
+make -j12 all 
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/41_External_Flash_with_Ultrasonic/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/main.o"
+arm-none-eabi-gcc -o "41_External_Flash_with_Ultrasonic.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\41_External_Flash_with_Ultrasonic\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="41_External_Flash_with_Ultrasonic.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 41_External_Flash_with_Ultrasonic.elf
+ 
+arm-none-eabi-size  41_External_Flash_with_Ultrasonic.elf 
+arm-none-eabi-objdump -h -S 41_External_Flash_with_Ultrasonic.elf  > "41_External_Flash_with_Ultrasonic.list"
+   text	   data	    bss	    dec	    hex	filename
+   6512	      0	   1608	   8120	   1fb8	41_External_Flash_with_Ultrasonic.elf
+Finished building: default.size.stdout
+ 
+Finished building: 41_External_Flash_with_Ultrasonic.list
+ 
+
+12:23:41 Build Finished. 0 errors, 0 warnings. (took 453ms)
+

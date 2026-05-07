@@ -1,0 +1,11 @@
+../Src/w25qxx.c:12:6:W25Q_CS_LOW	1
+../Src/w25qxx.c:16:6:W25Q_CS_HIGH	1
+../Src/w25qxx.c:22:6:W25Q_Init	1
+../Src/w25qxx.c:28:6:W25Q_WriteEnable	1
+../Src/w25qxx.c:40:9:W25Q_ReadStatus1	1
+../Src/w25qxx.c:57:6:W25Q_WaitBusy	2
+../Src/w25qxx.c:64:6:W25Q_ReadID	1
+../Src/w25qxx.c:78:6:W25Q_Read	1
+../Src/w25qxx.c:97:6:W25Q_WritePage	1
+../Src/w25qxx.c:120:6:W25Q_Write	3
+../Src/w25qxx.c:139:6:W25Q_EraseSector	1

@@ -1,0 +1,20 @@
+09:53:12 **** Incremental Build of configuration Debug for project 18_GPIO_Driver ****
+make -j12 all 
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/18_GPIO_Driver/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/main.o"
+arm-none-eabi-gcc "../Src/syscalls.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/18_GPIO_Driver/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/syscalls.d" -MT"Src/syscalls.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/syscalls.o"
+arm-none-eabi-gcc "../Src/sysmem.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/18_GPIO_Driver/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/sysmem.d" -MT"Src/sysmem.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/sysmem.o"
+arm-none-eabi-gcc "../Drivers/src/stm32l476xx_gpio.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/18_GPIO_Driver/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_gpio.d" -MT"Drivers/src/stm32l476xx_gpio.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_gpio.o"
+arm-none-eabi-gcc -o "18_GPIO_Driver.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\18_GPIO_Driver\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="18_GPIO_Driver.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 18_GPIO_Driver.elf
+ 
+arm-none-eabi-size  18_GPIO_Driver.elf 
+arm-none-eabi-objdump -h -S 18_GPIO_Driver.elf  > "18_GPIO_Driver.list"
+   text	   data	    bss	    dec	    hex	filename
+   1700	      0	   1568	   3268	    cc4	18_GPIO_Driver.elf
+Finished building: default.size.stdout
+ 
+Finished building: 18_GPIO_Driver.list
+ 
+
+09:53:15 Build Finished. 0 errors, 0 warnings. (took 2s.872ms)
+

@@ -1,0 +1,87 @@
+/*
+ * stm32l476xx.h
+ *
+ *  Created on: Apr 30, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#ifndef INC_STM32L476XX_H_
+#define INC_STM32L476XX_H_
+
+
+#define FLASH_BASE   0x08000000UL
+#define SRAM1_BASE   0x20000000UL
+#define SRAM2_BASE   0x10000000UL
+
+
+#define PERIPH_BASE        0x40000000UL
+
+//AHB
+#define AHB1PERIPH_BASE    (PERIPH_BASE + 0x00020000UL)
+#define AHB2PERIPH_BASE    (PERIPH_BASE + 0x08000000UL)
+#define AHB3PERIPH_BASE    (PERIPH_BASE + 0x0C000000UL)
+
+//APB
+#define APB1PERIPH_BASE    (PERIPH_BASE + 0x00000000UL)
+#define APB2PERIPH_BASE    (PERIPH_BASE + 0x00010000UL)
+
+
+//RCC
+#define RCC_BASE           (PERIPH_BASE + 0x21000UL)
+
+
+#define GPIOA_BASE         (AHB2PERIPH_BASE + 0x0000UL)
+#define GPIOB_BASE         (AHB2PERIPH_BASE + 0x0400UL)
+#define GPIOC_BASE         (AHB2PERIPH_BASE + 0x0800UL)
+#define GPIOD_BASE         (AHB2PERIPH_BASE + 0x0C00UL)
+#define GPIOE_BASE         (AHB2PERIPH_BASE + 0x1000UL)
+#define GPIOF_BASE         (AHB2PERIPH_BASE + 0x1400UL)
+#define GPIOG_BASE         (AHB2PERIPH_BASE + 0x1800UL)
+#define GPIOH_BASE         (AHB2PERIPH_BASE + 0x1C00UL)
+
+
+//UASRT
+#define USART1_BASE        (APB2PERIPH_BASE + 0x3800UL)
+#define USART2_BASE        (APB1PERIPH_BASE + 0x4400UL)
+#define USART3_BASE        (APB1PERIPH_BASE + 0x4800UL)
+
+//SPI
+#define SPI1_BASE          (APB2PERIPH_BASE + 0x3000UL)
+#define SPI2_BASE          (APB1PERIPH_BASE + 0x3800UL)
+#define SPI3_BASE          (APB1PERIPH_BASE + 0x3C00UL)
+
+//I2C
+#define I2C1_BASE          (APB1PERIPH_BASE + 0x5400UL)
+#define I2C2_BASE          (APB1PERIPH_BASE + 0x5800UL)
+#define I2C3_BASE          (APB1PERIPH_BASE + 0x5C00UL)
+
+//TIMERS
+#define TIM1_BASE          (APB2PERIPH_BASE + 0x2C00UL)
+#define TIM2_BASE          (APB1PERIPH_BASE + 0x0000UL)
+#define TIM3_BASE          (APB1PERIPH_BASE + 0x0400UL)
+
+//EXTI
+#define EXTI_BASE          (APB2PERIPH_BASE + 0x0400UL)
+
+
+
+typedef struct
+{
+    volatile uint32_t MODER;    // 0x00
+    volatile uint32_t OTYPER;   // 0x04
+    volatile uint32_t OSPEEDR;  // 0x08
+    volatile uint32_t PUPDR;    // 0x0C
+    volatile uint32_t IDR;      // 0x10
+    volatile uint32_t ODR;      // 0x14
+    volatile uint32_t BSRR;     // 0x18
+    volatile uint32_t LCKR;     // 0x1C
+    volatile uint32_t AFRL;     // 0x20
+    volatile uint32_t AFRH;     // 0x24
+    volatile uint32_t BRR;      // 0x28
+    volatile uint32_t ASCR;     // 0x2C
+} GPIO_TypeDef;
+
+#define GPIOA ((GPIO_TypeDef*)GPIOA_BASE)
+
+
+#endif /* INC_STM32L476XX_H_ */

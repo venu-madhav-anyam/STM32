@@ -1,0 +1,15 @@
+/*
+ * itm.h
+ *
+ *  Created on: May 6, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#ifndef ITM_H_
+#define ITM_H_
+
+#include <stdint.h>
+
+void ITM_SendChar(uint8_t ch);
+
+#endif /* ITM_H_ */

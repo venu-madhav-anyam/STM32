@@ -1,0 +1,142 @@
+/*
+ * w25qxx.c
+ *
+ *  Created on: May 5, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "w25qxx.h"
+#include "stm32l476xx_spi.h"
+#include "stm32l476xx.h"
+
+
+extern volatile uint8_t spi_done;
+extern volatile SPI_Handle_t SPI1Handle;
+
+void SPI_Transfer_Blocking(uint8_t *tx, uint8_t *rx, uint32_t len)
+{
+    spi_done = 0;
+
+    SPI_TransmitReceive_IT(&SPI1Handle, tx, rx, len);
+
+    while (!spi_done);
+}
+
+/* -------- CS CONTROL -------- */
+#define CS_LOW()   GPIO_WriteToOutputPin(GPIOA, 4, 0)
+#define CS_HIGH()  GPIO_WriteToOutputPin(GPIOA, 4, 1)
+
+/* -------- INIT -------- */
+void W25Q_Init(void) {
+	CS_HIGH();
+}
+
+/* -------- WRITE ENABLE -------- */
+void W25Q_WriteEnable(void)
+{
+    uint8_t tx[1] = {W25Q_CMD_WRITE_ENABLE};
+    uint8_t rx[1];
+
+    CS_LOW();
+    SPI_Transfer_Blocking(tx, rx, 1);
+    CS_HIGH();
+}
+
+/* -------- READ STATUS -------- */
+uint8_t W25Q_ReadStatus(void)
+{
+    uint8_t tx[2] = {W25Q_CMD_READ_STATUS, 0xFF};
+    uint8_t rx[2];
+
+    CS_LOW();
+    SPI_Transfer_Blocking(tx, rx, 2);
+    CS_HIGH();
+
+    return rx[1];
+}
+
+/* -------- WAIT BUSY -------- */
+void W25Q_WaitBusy(void) {
+	while (W25Q_ReadStatus() & 0x01)
+		;
+}
+
+/* -------- READ ID -------- */
+void W25Q_ReadID(uint8_t *id) {
+	uint8_t cmd = W25Q_CMD_READ_ID;
+
+	CS_LOW();
+	SPI_SendData(SPI1, &cmd, 1);
+	SPI_ReceiveData(SPI1, id, 3);
+	CS_HIGH();
+}
+
+/* -------- READ DATA -------- */
+void W25Q_Read(uint32_t addr, uint8_t *data, uint16_t len)
+{
+    uint8_t cmd[4] = {
+        W25Q_CMD_READ_DATA,
+        addr >> 16,
+        addr >> 8,
+        addr
+    };
+
+    CS_LOW();
+
+    SPI_Transfer_Blocking(cmd, cmd, 4);
+    SPI_Transfer_Blocking(data, data, len);
+
+    CS_HIGH();
+}
+
+/* -------- PAGE WRITE -------- */
+void W25Q_Write(uint32_t addr, uint8_t *data, uint16_t len)
+{
+    while (len > 0)
+    {
+        uint16_t chunk = 256 - (addr % 256);
+        if (chunk > len)
+            chunk = len;
+
+        W25Q_WriteEnable();
+
+        uint8_t cmd[4] = {
+            W25Q_CMD_PAGE_PROGRAM,
+            addr >> 16,
+            addr >> 8,
+            addr
+        };
+
+        CS_LOW();
+
+        SPI_Transfer_Blocking(cmd, cmd, 4);
+        SPI_Transfer_Blocking(data, data, chunk);
+
+        CS_HIGH();
+
+        W25Q_WaitBusy();
+
+        addr += chunk;
+        data += chunk;
+        len -= chunk;
+    }
+}
+
+/* -------- SECTOR ERASE -------- */
+void W25Q_EraseSector(uint32_t addr)
+{
+    W25Q_WriteEnable();
+
+    uint8_t cmd[4] = {
+        W25Q_CMD_SECTOR_ERASE,
+        addr >> 16,
+        addr >> 8,
+        addr
+    };
+
+    CS_LOW();
+    SPI_Transfer_Blocking(cmd, cmd, 4);
+    CS_HIGH();
+
+    W25Q_WaitBusy();
+}

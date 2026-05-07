@@ -1,0 +1,90 @@
+/*
+ * stm32l476xx_spi.h
+ *
+ *  Created on: May 5, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#ifndef INC_STM32L476XX_SPI_H_
+#define INC_STM32L476XX_SPI_H_
+
+#include "stm32l476xx.h"
+
+/* ================= CONFIG STRUCT ================= */
+
+typedef struct {
+	uint8_t DeviceMode;   // Master/Slave
+	uint8_t BusConfig;    // Full duplex
+	uint8_t SclkSpeed;    // Baud rate
+	uint8_t DFF;          // Data frame format
+	uint8_t CPOL;
+	uint8_t CPHA;
+	uint8_t SSM;
+} SPI_Config_t;
+
+typedef struct {
+	SPI_RegDef_t *pSPIx;
+	SPI_Config_t SPI_Config;
+	uint8_t *pTxBuffer;
+	uint8_t *pRxBuffer;
+	uint32_t TxLen;
+	uint32_t RxLen;
+	uint8_t TxState;
+	uint8_t RxState;
+} SPI_Handle_t;
+
+/* ================= MACROS ================= */
+
+#define SPI_DEVICE_MODE_MASTER   1
+#define SPI_DEVICE_MODE_SLAVE    0
+
+#define SPI_BUS_CONFIG_FD        			 1
+#define SPI_BUS_CONFIG_HD        			 2
+#define SPI_BUS_CONFIG_SIMPLEX_RXONLY        3
+
+#define SPI_SCLK_SPEED_DIV2      0
+#define SPI_SCLK_SPEED_DIV4      1
+#define SPI_SCLK_SPEED_DIV8      2
+#define SPI_SCLK_SPEED_DIV16     3
+#define SPI_SCLK_SPEED_DIV32     4
+#define SPI_SCLK_SPEED_DIV64     5
+#define SPI_SCLK_SPEED_DIV128    6
+#define SPI_SCLK_SPEED_DIV256    7
+
+#define SPI_DFF_8BITS           0
+#define SPI_DFF_16BITS          1
+
+#define SPI_CPOL_LOW            0
+#define SPI_CPOL_HIGH           1
+
+#define SPI_CPHA_LOW            0
+#define SPI_CPHA_HIGH           1
+
+#define SPI_SSM_EN              1
+#define SPI_SSM_DI              0
+
+/* ================= FLAGS ================= */
+
+#define SPI_TXE_FLAG    (1 << 1)
+#define SPI_RXNE_FLAG   (1 << 0)
+#define SPI_BUSY_FLAG   (1 << 7)
+
+/* ================= API ================= */
+
+void SPI_PeriClockControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
+void SPI_Init(SPI_Handle_t *pSPIHandle);
+void SPI_DeInit(SPI_RegDef_t *pSPIx);
+void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t Len);
+void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t Len);
+uint8_t SPI_Transfer(SPI_RegDef_t *pSPIx, uint8_t data);
+
+void SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t Len);
+void SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer,
+		uint32_t Len);
+
+//IRQ Configuration and ISR handling
+void SPI_IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t En_or_Dis);
+void SPI_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority);
+void SPI_IRQHandling(SPI_Handle_t *pHandle);
+
+#endif

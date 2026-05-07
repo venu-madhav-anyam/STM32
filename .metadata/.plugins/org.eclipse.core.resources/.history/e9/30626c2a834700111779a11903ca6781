@@ -1,0 +1,227 @@
+#include "stm32l476xx_gpio.h"
+
+#include "stm32l476xx_gpio.h"
+
+/* -------- CLOCK CONTROL -------- */
+/**
+ * @brief   Enables or disables the peripheral clock for the given GPIO port
+ *
+ * @param   pGPIOx        Base address of the GPIO peripheral (GPIOA, GPIOB, ...)
+ * @param   En_or_Dis     ENABLE (1) or DISABLE (0)
+ *
+ * @return  None
+ *
+ * @note    Clock must be enabled before using any GPIO register
+ */
+void GPIO_PeriClockControl(GPIO_TypeDef *pGPIOx, uint8_t En_or_Dis) {
+	if (En_or_Dis) {
+		if (pGPIOx == GPIOA)
+			GPIOA_CLK_ENABLE();
+		else if (pGPIOx == GPIOB)
+			GPIOB_CLK_ENABLE();
+		else if (pGPIOx == GPIOC)
+			GPIOC_CLK_ENABLE();
+		else if (pGPIOx == GPIOD)
+			GPIOD_CLK_ENABLE();
+		else if (pGPIOx == GPIOE)
+			GPIOE_CLK_ENABLE();
+		else if (pGPIOx == GPIOF)
+			GPIOF_CLK_ENABLE();
+		else if (pGPIOx == GPIOG)
+			GPIOG_CLK_ENABLE();
+		else if (pGPIOx == GPIOH)
+			GPIOH_CLK_ENABLE();
+	}
+}
+
+/* -------- INIT -------- */
+/**
+ * @brief   Initializes the GPIO pin with given configuration
+ *
+ * @param   pGPIOHandle   Pointer to GPIO handle structure
+ *
+ * @return  None
+ *
+ * @note    Configures mode, speed, pull-up/down, output type and alternate function
+ */
+void GPIO_Init(GPIO_Handle_t *pGPIOHandle) {
+	uint32_t temp = 0;
+
+	/* MODE */
+	temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode
+			<< (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
+	pGPIOHandle->pGPIOx->MODER &= ~(3
+			<< (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
+	pGPIOHandle->pGPIOx->MODER |= temp;
+
+	/* SPEED */
+	temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinSpeed
+			<< (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
+	pGPIOHandle->pGPIOx->OSPEEDR &= ~(3
+			<< (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
+	pGPIOHandle->pGPIOx->OSPEEDR |= temp;
+
+	/* PULL-UP / PULL-DOWN */
+	temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinPuPdControl
+			<< (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
+	pGPIOHandle->pGPIOx->PUPDR &= ~(3
+			<< (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
+	pGPIOHandle->pGPIOx->PUPDR |= temp;
+
+	/* OUTPUT TYPE */
+	temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinOPType
+			<< pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+	pGPIOHandle->pGPIOx->OTYPER &= ~(1
+			<< pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+	pGPIOHandle->pGPIOx->OTYPER |= temp;
+
+	/* ALTERNATE FUNCTION */
+	if (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == 2) // AF mode
+			{
+		uint8_t pin = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber;
+		uint8_t af = pGPIOHandle->GPIO_PinConfig.GPIO_PinAltFunMode;
+
+		if (pin < 8) {
+			pGPIOHandle->pGPIOx->AFRL &= ~(0xF << (4 * pin));
+			pGPIOHandle->pGPIOx->AFRL |= (af << (4 * pin));
+		} else {
+			pGPIOHandle->pGPIOx->AFRH &= ~(0xF << (4 * (pin - 8)));
+			pGPIOHandle->pGPIOx->AFRH |= (af << (4 * (pin - 8)));
+		}
+	}
+}
+
+/* -------- DEINIT -------- */
+/**
+ * @brief   Resets the given GPIO peripheral
+ *
+ * @param   pGPIOx    Base address of GPIO peripheral
+ *
+ * @return  None
+ *
+ * @note    Resets all registers to default values
+ */
+void GPIO_DeInit(GPIO_TypeDef *pGPIOx) {
+	if (pGPIOx == GPIOA)
+		RCC->AHB2RSTR |= (1 << 0);
+	else if (pGPIOx == GPIOB)
+		RCC->AHB2RSTR |= (1 << 1);
+	else if (pGPIOx == GPIOC)
+		RCC->AHB2RSTR |= (1 << 2);
+}
+
+/* -------- READ -------- */
+/**
+ * @brief   Reads the value from a specific GPIO input pin
+ *
+ * @param   pGPIOx     Base address of GPIO peripheral
+ * @param   PinNumber  GPIO pin number (0–15)
+ *
+ * @return  uint8_t    Pin state (0 or 1)
+ *
+ * @note    Reads IDR register
+ */
+uint8_t GPIO_ReadFromInputPin(GPIO_TypeDef *pGPIOx, uint8_t PinNumber) {
+	return (uint8_t) ((pGPIOx->IDR >> PinNumber) & 0x1);
+}
+
+/**
+ * @brief   Reads the entire GPIO input port
+ *
+ * @param   pGPIOx   Base address of GPIO peripheral
+ *
+ * @return  uint16_t Value of IDR register
+ *
+ * @note    Returns all 16 pin states
+ */
+uint16_t GPIO_ReadFromInputPort(GPIO_TypeDef *pGPIOx) {
+	return (uint16_t) (pGPIOx->IDR);
+}
+
+/* -------- WRITE -------- */
+/**
+ * @brief   Writes a value to a specific GPIO output pin
+ *
+ * @param   pGPIOx     Base address of GPIO peripheral
+ * @param   PinNumber  GPIO pin number (0–15)
+ * @param   Value      Pin value (0 or 1)
+ *
+ * @return  None
+ *
+ * @note    Uses BSRR register for atomic operation
+ */
+void GPIO_WriteToOutputPin(GPIO_TypeDef *pGPIOx, uint8_t PinNumber,
+		uint8_t Value) {
+	if (Value)
+		pGPIOx->BSRR = (1 << PinNumber);
+	else
+		pGPIOx->BSRR = (1 << (PinNumber + 16));
+}
+
+/**
+ * @brief   Writes a value to the entire GPIO output port
+ *
+ * @param   pGPIOx   Base address of GPIO peripheral
+ * @param   Value    16-bit value to write to ODR
+ *
+ * @return  None
+ *
+ * @note    Overwrites entire port
+ */
+void GPIO_WriteToOutputPort(GPIO_TypeDef *pGPIOx, uint16_t Value) {
+	pGPIOx->ODR = Value;
+}
+
+/**
+ * @brief   Toggles the state of a GPIO output pin
+ *
+ * @param   pGPIOx     Base address of GPIO peripheral
+ * @param   PinNumber  GPIO pin number (0–15)
+ *
+ * @return  None
+ *
+ * @note    Uses XOR on ODR register
+ */
+void GPIO_ToggleOutputPin(GPIO_TypeDef *pGPIOx, uint8_t PinNumber) {
+	pGPIOx->ODR ^= (1 << PinNumber);
+}
+
+/**
+ * @brief   Configures NVIC interrupt for GPIO pin
+ *
+ * @param   IRQNumber     IRQ number (EXTI line)
+ * @param   IRQPriority   Priority level
+ * @param   En_or_Dis     ENABLE (1) or DISABLE (0)
+ *
+ * @return  None
+ *
+ * @note    Configures NVIC registers
+ */
+void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t En_or_Dis) {
+	if (En_or_Dis) {
+		NVIC_ISER0 |= (1 << IRQNumber);
+	} else {
+		NVIC_ICER0 |= (1 << IRQNumber);
+	}
+
+	/* Set priority */
+	uint8_t iprx = IRQNumber / 4;
+	uint8_t iprx_section = IRQNumber % 4;
+
+	NVIC_IPR[iprx] |= (IRQPriority << (8 * iprx_section));
+}
+
+/**
+ * @brief   Handles GPIO interrupt
+ *
+ * @param   PinNumber   GPIO pin number (0–15)
+ *
+ * @return  None
+ *
+ * @note    Clears EXTI pending register
+ */
+void GPIO_IRQHandling(uint8_t PinNumber) {
+	if (EXTI->PR1 & (1 << PinNumber)) {
+		EXTI->PR1 |= (1 << PinNumber); // clear pending
+	}
+}

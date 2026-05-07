@@ -1,0 +1,41 @@
+#ifndef GPIO_DRIVER_H
+#define GPIO_DRIVER_H
+
+#include "stm32l476xx.h"
+
+/* MODES */
+#define GPIO_MODE_INPUT     0x00
+#define GPIO_MODE_OUTPUT    0x01
+#define GPIO_MODE_AF        0x02
+#define GPIO_MODE_ANALOG    0x03
+
+/* OUTPUT TYPE */
+#define GPIO_OTYPE_PP       0
+#define GPIO_OTYPE_OD       1
+
+/* PULL */
+#define GPIO_NOPULL         0
+#define GPIO_PULLUP         1
+#define GPIO_PULLDOWN       2
+
+/* SPEED */
+#define GPIO_SPEED_LOW      0
+#define GPIO_SPEED_MEDIUM   1
+#define GPIO_SPEED_HIGH     2
+#define GPIO_SPEED_VHIGH    3
+
+typedef struct {
+    uint32_t pin;
+    uint32_t mode;
+    uint32_t pull;
+    uint32_t speed;
+    uint32_t otype;
+} GPIO_Config_t;
+
+/* APIs */
+void GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_Config_t *config);
+void GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t pin, uint8_t state);
+uint8_t GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t pin);
+void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint16_t pin);
+
+#endif

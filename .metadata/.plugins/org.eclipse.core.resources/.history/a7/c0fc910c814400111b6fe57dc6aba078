@@ -1,0 +1,46 @@
+#include "gpio.h"
+
+/* -------- INIT -------- */
+void GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_Config_t *config) {
+	uint8_t pos = 0;
+
+	/* Find pin number */
+	for (pos = 0; pos < 16; pos++) {
+		if (config->pin & (1 << pos))
+			break;
+	}
+
+	/* 1. MODE */
+	GPIOx->MODER &= ~(3 << (2 * pos));
+	GPIOx->MODER |= (config->mode << (2 * pos));
+
+	/* 2. OUTPUT TYPE */
+	GPIOx->OTYPER &= ~(1 << pos);
+	GPIOx->OTYPER |= (config->otype << pos);
+
+	/* 3. SPEED */
+	GPIOx->OSPEEDR &= ~(3 << (2 * pos));
+	GPIOx->OSPEEDR |= (config->speed << (2 * pos));
+
+	/* 4. PULL-UP/DOWN */
+	GPIOx->PUPDR &= ~(3 << (2 * pos));
+	GPIOx->PUPDR |= (config->pull << (2 * pos));
+}
+
+/* -------- WRITE -------- */
+void GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t pin, uint8_t state) {
+	if (state)
+		GPIOx->BSRR = pin;          // set
+	else
+		GPIOx->BSRR = (pin << 16);  // reset
+}
+
+/* -------- READ -------- */
+uint8_t GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t pin) {
+	return (GPIOx->IDR & pin) ? 1 : 0;
+}
+
+/* -------- TOGGLE -------- */
+void GPIO_TogglePin(GPIO_TypeDef *GPIOx, uint16_t pin) {
+	GPIOx->ODR ^= pin;
+}

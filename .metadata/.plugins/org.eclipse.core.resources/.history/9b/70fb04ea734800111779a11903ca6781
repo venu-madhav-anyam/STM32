@@ -1,0 +1,115 @@
+/*
+ * w25qxx.c
+ *
+ *  Created on: May 5, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "w25qxx.h"
+
+/* -------- CS CONTROL -------- */
+#define CS_LOW()   GPIO_WriteToOutputPin(GPIOA, 4, 0)
+#define CS_HIGH()  GPIO_WriteToOutputPin(GPIOA, 4, 1)
+
+/* -------- INIT -------- */
+void W25Q_Init(void) {
+	CS_HIGH();
+}
+
+/* -------- WRITE ENABLE -------- */
+void W25Q_WriteEnable(void) {
+	uint8_t cmd = W25Q_CMD_WRITE_ENABLE;
+
+	CS_LOW();
+	SPI_SendData(SPI1, &cmd, 1);
+	CS_HIGH();
+}
+
+/* -------- READ STATUS -------- */
+uint8_t W25Q_ReadStatus(void) {
+	uint8_t cmd = W25Q_CMD_READ_STATUS;
+	uint8_t status;
+
+	CS_LOW();
+	SPI_SendData(SPI1, &cmd, 1);
+	SPI_ReceiveData(SPI1, &status, 1);
+	CS_HIGH();
+
+	return status;
+}
+
+/* -------- WAIT BUSY -------- */
+void W25Q_WaitBusy(void) {
+	while (W25Q_ReadStatus() & 0x01)
+		;
+}
+
+/* -------- READ ID -------- */
+void W25Q_ReadID(uint8_t *id) {
+	uint8_t cmd = W25Q_CMD_READ_ID;
+
+	CS_LOW();
+	SPI_SendData(SPI1, &cmd, 1);
+	SPI_ReceiveData(SPI1, id, 3);
+	CS_HIGH();
+}
+
+/* -------- READ DATA -------- */
+void W25Q_Read(uint32_t addr, uint8_t *data, uint16_t len) {
+	uint8_t cmd[4];
+
+	cmd[0] = W25Q_CMD_READ_DATA;
+	cmd[1] = addr >> 16;
+	cmd[2] = addr >> 8;
+	cmd[3] = addr;
+
+	CS_LOW();
+	SPI_SendData(SPI1, cmd, 4);
+	SPI_ReceiveData(SPI1, data, len);
+	CS_HIGH();
+}
+
+/* -------- PAGE WRITE -------- */
+void W25Q_Write(uint32_t addr, uint8_t *data, uint16_t len) {
+	while (len > 0) {
+		uint16_t chunk = 256 - (addr % 256);
+		if (chunk > len)
+			chunk = len;
+
+		W25Q_WriteEnable();
+
+		uint8_t cmd[4];
+		cmd[0] = W25Q_CMD_PAGE_PROGRAM;
+		cmd[1] = addr >> 16;
+		cmd[2] = addr >> 8;
+		cmd[3] = addr;
+
+		CS_LOW();
+		SPI_SendData(SPI1, cmd, 4);
+		SPI_SendData(SPI1, data, chunk);
+		CS_HIGH();
+
+		W25Q_WaitBusy();
+
+		addr += chunk;
+		data += chunk;
+		len -= chunk;
+	}
+}
+
+/* -------- SECTOR ERASE -------- */
+void W25Q_EraseSector(uint32_t addr) {
+	W25Q_WriteEnable();
+
+	uint8_t cmd[4];
+	cmd[0] = W25Q_CMD_SECTOR_ERASE;
+	cmd[1] = addr >> 16;
+	cmd[2] = addr >> 8;
+	cmd[3] = addr;
+
+	CS_LOW();
+	SPI_SendData(SPI1, cmd, 4);
+	CS_HIGH();
+
+	W25Q_WaitBusy();
+}
