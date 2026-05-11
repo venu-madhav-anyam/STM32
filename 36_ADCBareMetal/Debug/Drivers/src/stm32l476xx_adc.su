@@ -1,0 +1,4 @@
+../Drivers/src/stm32l476xx_adc.c:10:13:delay_ms	24	static
+../Drivers/src/stm32l476xx_adc.c:15:6:ADC_PeriClockControl	16	static
+../Drivers/src/stm32l476xx_adc.c:27:6:ADC_Init	16	static,ignoring_inline_asm
+../Drivers/src/stm32l476xx_adc.c:99:10:ADC_Read	4	static

@@ -1,0 +1,59 @@
+/*
+ * opt3001.c
+ *
+ *  Created on: May 7, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "opt3001.h"
+
+//WRITE REGISTER
+void OPT3001_WriteReg(I2C_Handle_t *pI2CHandle, uint8_t reg, uint16_t value) {
+	uint8_t data[3];
+
+	data[0] = reg;
+
+	data[1] = (value >> 8) & 0xFF;
+	data[2] = value & 0xFF;
+
+	I2C_MasterSendData(pI2CHandle, data, 3,
+	OPT3001_ADDR);
+}
+
+//READ REGISTER
+uint16_t OPT3001_ReadReg(I2C_Handle_t *pI2CHandle, uint8_t reg) {
+	uint8_t rx[2];
+
+	/* Send register address */
+	I2C_MasterSendData(pI2CHandle, &reg, 1,
+	OPT3001_ADDR);
+
+	/* Read 2 bytes */
+	I2C_MasterReceiveData(pI2CHandle, rx, 2,
+	OPT3001_ADDR);
+
+	return ((rx[0] << 8) | rx[1]);
+}
+
+//SENSOR INIT
+void OPT3001_Init(I2C_Handle_t *pI2CHandle) {
+
+	OPT3001_WriteReg(pI2CHandle,
+	OPT3001_REG_CONFIG, 0xC410);
+}
+
+//READ LUX
+float OPT3001_ReadLux(I2C_Handle_t *pI2CHandle) {
+	uint16_t raw;
+	uint16_t exponent;
+	uint16_t mantissa;
+
+	raw = OPT3001_ReadReg(pI2CHandle,
+	OPT3001_REG_RESULT);
+
+	exponent = (raw >> 12) & 0x0F;
+
+	mantissa = raw & 0x0FFF;
+
+	return (mantissa * (0.01f * (1 << exponent)));
+}

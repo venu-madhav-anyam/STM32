@@ -1,0 +1,36 @@
+/*
+ * opt3001.h
+ *
+ *  Created on: May 7, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#ifndef INC_OPT3001_H_
+#define INC_OPT3001_H_
+
+#include "stm32l476xx_i2c.h"
+
+/* ================= DEVICE ADDRESS ================= */
+
+#define OPT3001_ADDR               0x44
+
+/* ================= REGISTER MAP ================= */
+
+#define OPT3001_REG_RESULT         0x00
+#define OPT3001_REG_CONFIG         0x01
+#define OPT3001_REG_LOWLIMIT       0x02
+#define OPT3001_REG_HIGHLIMIT      0x03
+#define OPT3001_REG_MANFID         0x7E
+#define OPT3001_REG_DEVICEID       0x7F
+
+/* ================= APIs ================= */
+
+void OPT3001_Init(I2C_Handle_t *pI2CHandle);
+
+void OPT3001_WriteReg(I2C_Handle_t *pI2CHandle, uint8_t reg, uint16_t value);
+
+uint16_t OPT3001_ReadReg(I2C_Handle_t *pI2CHandle, uint8_t reg);
+
+int OPT3001_ReadLux(I2C_Handle_t *pI2CHandle);
+
+#endif /* OPT3001_H_ */

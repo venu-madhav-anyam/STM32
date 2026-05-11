@@ -1,4 +1,4 @@
-09:53:12 **** Incremental Build of configuration Debug for project 18_GPIO_Driver ****
+10:49:17 **** Incremental Build of configuration Debug for project 18_GPIO_Driver ****
 make -j12 all 
 arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/18_GPIO_Driver/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/main.o"
 arm-none-eabi-gcc "../Src/syscalls.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/18_GPIO_Driver/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/syscalls.d" -MT"Src/syscalls.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/syscalls.o"
@@ -16,5 +16,5 @@ Finished building: default.size.stdout
 Finished building: 18_GPIO_Driver.list
  
 
-09:53:15 Build Finished. 0 errors, 0 warnings. (took 2s.872ms)
+10:49:19 Build Finished. 0 errors, 0 warnings. (took 2s.810ms)
 

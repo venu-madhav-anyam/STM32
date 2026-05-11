@@ -1,7 +1,5 @@
-../Src/main.c:30:6:delay_us	2
-../Src/main.c:35:6:delay_ms	2
-../Src/main.c:41:6:Ultrasonic_Init	1
-../Src/main.c:65:10:Ultrasonic_Read	4
-../Src/main.c:99:6:SPI_GPIO_Init	1
-../Src/main.c:134:6:EXTI15_10_IRQHandler	1
-../Src/main.c:153:5:main	3
+../Src/main.c:29:6:delay_us	2
+../Src/main.c:34:6:delay_ms	2
+../Src/main.c:40:6:Ultrasonic_Init	1
+../Src/main.c:64:10:Ultrasonic_Read	4
+../Src/main.c:98:5:main	1

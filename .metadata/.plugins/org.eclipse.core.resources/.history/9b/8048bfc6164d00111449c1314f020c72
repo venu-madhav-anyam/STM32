@@ -1,0 +1,86 @@
+/*
+ * stm32l476xx_adc.c
+ *
+ *  Created on: May 11, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "stm32l476xx_adc.h"
+
+static void delay_ms(uint8_t a) {
+	for (volatile uint32_t i = 0; i < 100000 * a; i++)
+		;
+}
+
+void ADC_PeriClockControl(ADC_TypeDef *pADCx, uint8_t EnOrDi) {
+	if (EnOrDi == ENABLE) {
+		if (pADCx == ADC1 || pADCx == ADC2) {
+			RCC->AHB2ENR |= (1 << 13);
+		}
+	} else {
+		if (pADCx == ADC1 || pADCx == ADC2) {
+			RCC->AHB2ENR &= ~(1 << 13);
+		}
+	}
+}
+
+void ADC_Init(void)
+{
+    /* Enable ADC clock */
+    RCC->AHB2ENR |= (1 << 13);
+
+    /* Enable HSI16 */
+    RCC->CR |= (1 << 8);
+
+    while (!(RCC->CR & (1 << 10)));
+
+    /* Exit deep-power-down */
+    ADC2->CR &= ~(1 << 29);
+
+    /* Enable regulator */
+    ADC2->CR |= (1 << 28);
+
+    for (volatile uint32_t i = 0;
+         i < 1000000;
+         i++)
+    {
+        __asm("nop");
+    }
+
+    /* Async clock */
+    ADC123_COMMON->CCR &= ~(3 << 16);
+
+    /* Single conversion */
+    ADC2->CFGR &= ~(1 << 13);
+
+    /* EOC after each conversion */
+    ADC2->CFGR &= ~(1 << 10);
+
+    /* Sequence length = 1 */
+    ADC2->SQR1 &= ~(0xF << 0);
+
+    /* Channel 5 = PA0 */
+    ADC2->SQR1 &= ~(0x1F << 6);
+    ADC2->SQR1 |=  (5 << 6);
+
+    /* Sampling time */
+    ADC2->SMPR1 &= ~(7 << 15);
+    ADC2->SMPR1 |=  (7 << 15);
+
+    /* Clear ADRDY */
+    ADC2->ISR |= (1 << 0);
+
+    /* Enable ADC */
+    ADC2->CR |= (1 << 0);
+
+    while (!(ADC2->ISR & (1 << 0)));
+}
+
+uint16_t ADC_Read(void)
+{
+    ADC2->CR |= (1 << 2);
+
+    while (!(ADC2->ISR & (1 << 2)));
+
+    return (uint16_t)ADC2->DR;
+}

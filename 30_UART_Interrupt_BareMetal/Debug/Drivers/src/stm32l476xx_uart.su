@@ -1,0 +1,6 @@
+../Drivers/src/stm32l476xx_uart.c:12:6:USART_Init	24	static
+../Drivers/src/stm32l476xx_uart.c:70:6:USART_SendData	24	static
+../Drivers/src/stm32l476xx_uart.c:87:9:USART_ReceiveData	32	static
+../Drivers/src/stm32l476xx_uart.c:123:9:USART_ReceiveDataIT	24	static
+../Drivers/src/stm32l476xx_uart.c:144:6:USART_IRQHandling	24	static
+../Drivers/src/stm32l476xx_uart.c:179:6:USART_IRQConfig	24	static

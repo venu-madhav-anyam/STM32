@@ -1,0 +1,84 @@
+/*
+ * stm32l476xx_adc.c
+ *
+ *  Created on: May 11, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "stm32l476xx_adc.h"
+
+static void delay_ms(uint8_t a) {
+	for (volatile uint32_t i = 0; i < 100000 * a; i++)
+		;
+}
+
+void ADC_PeriClockControl(ADC_TypeDef *pADCx, uint8_t EnOrDi) {
+	if (EnOrDi == ENABLE) {
+		if (pADCx == ADC1) {
+			ADC1_CLK_ENABLE();
+		}
+	} else {
+		if (pADCx == ADC1) {
+			ADC1_CLK_DISABLE();
+		}
+	}
+}
+
+void ADC_Init(void) {
+	/* ADC clock enable */
+	RCC->AHB2ENR |= (1 << 13);
+
+	/* ADC clock source = SYSCLK */
+	RCC->CCIPR &= ~(3 << 28);
+
+	/* Exit deep power down */
+	ADC1->CR &= ~(1 << 29);
+
+	/* Enable regulator */
+	ADC1->CR |= (1 << 28);
+
+	delay_ms(1);
+
+	/* Ensure ADC disabled */
+	if (ADC1->CR & (1 << 0)) {
+		ADC1->CR |= (1 << 1);
+
+		while (ADC1->CR & (1 << 0))
+			;
+	}
+
+	/* Single-ended calibration */
+	ADC1->CR &= ~(1 << 30);
+
+	/* Start calibration */
+	ADC1->CR |= (1 << 31);
+
+	while (ADC1->CR & (1 << 31))
+		;
+
+	/* Enable ADC */
+	ADC1->ISR |= (1 << 0);
+
+	ADC1->CR |= (1 << 0);
+
+	while (!(ADC1->ISR & (1 << 0)))
+		;
+
+	/* Channel 5 = PA0 */
+	ADC1->SQR1 |= (5 << 6);
+
+	/* Sampling time */
+	ADC1->SMPR1 |= (7 << 15);
+}
+
+uint16_t ADC_Read(void) {
+	/* Start conversion */
+	ADC1->CR |= (1 << 2);
+
+	/* Wait EOC */
+	while (!(ADC1->ISR & (1 << 2)))
+		;
+
+	return ADC1->DR;
+}
+

@@ -1,0 +1,10 @@
+10:49:22 **** Build of configuration Debug for project 29_UART_BareMetal ****
+make -j12 all 
+arm-none-eabi-size  29_UART_BareMetal.elf 
+   text	   data	    bss	    dec	    hex	filename
+  16824	    456	   4992	  22272	   5700	29_UART_BareMetal.elf
+Finished building: default.size.stdout
+ 
+
+10:49:22 Build Finished. 0 errors, 0 warnings. (took 169ms)
+

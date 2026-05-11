@@ -1,0 +1,231 @@
+#include "stm32l476xx.h"
+#include "stm32l476xx_gpio.h"
+#include "stm32l476xx_spi.h"
+#include "stm32l476xx_uart.h"
+#include "w25qxx.h"
+#include <stdio.h>
+#include <string.h>
+
+SPI_Handle_t SPI1Handle;
+USART_Handle_t USART2Handle;
+
+/* ==========================================================
+ * ====================== DELAY ==============================
+ * ========================================================== */
+
+
+/* ==========================================================
+ * ====================== PRINTF =============================
+ * ========================================================== */
+
+int _write(int file, char *ptr, int len)
+{
+    USART_SendData(USART2,
+                   (uint8_t*)ptr,
+                   len);
+
+    return len;
+}
+
+/* ==========================================================
+ * ====================== USART GPIO =========================
+ * ========================================================== */
+
+void USART2_GPIO_Init(void)
+{
+    GPIO_Handle_t USARTPins;
+
+    USARTPins.pGPIOx = GPIOA;
+
+    USARTPins.GPIO_PinConfig.GPIO_PinMode =
+            GPIO_MODE_ALTFN;
+
+    USARTPins.GPIO_PinConfig.GPIO_PinAltFunMode = 7;
+
+    USARTPins.GPIO_PinConfig.GPIO_PinSpeed =
+            GPIO_SPEED_FAST;
+
+    USARTPins.GPIO_PinConfig.GPIO_PinOPType =
+            GPIO_OP_TYPE_PP;
+
+    USARTPins.GPIO_PinConfig.GPIO_PinPuPdControl =
+            GPIO_PIN_PU;
+
+    /* TX */
+    USARTPins.GPIO_PinConfig.GPIO_PinNumber = 2;
+    GPIO_Init(&USARTPins);
+
+    /* RX */
+    USARTPins.GPIO_PinConfig.GPIO_PinNumber = 3;
+    GPIO_Init(&USARTPins);
+}
+
+/* ==========================================================
+ * ====================== SPI GPIO ===========================
+ * ========================================================== */
+
+void SPI_GPIO_Init(void)
+{
+    GPIO_Handle_t spiPins;
+
+    memset(&spiPins, 0, sizeof(spiPins));
+
+    spiPins.pGPIOx = GPIOA;
+
+    spiPins.GPIO_PinConfig.GPIO_PinMode =
+            GPIO_MODE_ALTFN;
+
+    spiPins.GPIO_PinConfig.GPIO_PinAltFunMode = 5;
+
+    spiPins.GPIO_PinConfig.GPIO_PinSpeed =
+            GPIO_SPEED_FAST;
+
+    spiPins.GPIO_PinConfig.GPIO_PinOPType =
+            GPIO_OP_TYPE_PP;
+
+    spiPins.GPIO_PinConfig.GPIO_PinPuPdControl =
+            GPIO_NO_PUPD;
+
+    /* SCK */
+    spiPins.GPIO_PinConfig.GPIO_PinNumber = 5;
+    GPIO_Init(&spiPins);
+
+    /* MISO */
+    spiPins.GPIO_PinConfig.GPIO_PinNumber = 6;
+    GPIO_Init(&spiPins);
+
+    /* MOSI */
+    spiPins.GPIO_PinConfig.GPIO_PinNumber = 7;
+    GPIO_Init(&spiPins);
+
+    /* CS */
+    spiPins.GPIO_PinConfig.GPIO_PinMode =
+            GPIO_MODE_OUTPUT;
+
+    spiPins.GPIO_PinConfig.GPIO_PinNumber = 4;
+    GPIO_Init(&spiPins);
+
+    GPIO_WriteToOutputPin(GPIOA, 4, 1);
+}
+
+/* ==========================================================
+ * ========================= MAIN ============================
+ * ========================================================== */
+
+int main(void)
+{
+    /* USART INIT */
+
+    USART2_GPIO_Init();
+
+    USART2Handle.pUSARTx = USART2;
+
+    USART2Handle.USART_Config.USART_Mode =
+            USART_MODE_TXRX;
+
+    USART2Handle.USART_Config.USART_Baud =
+            USART_STD_BAUD_115200;
+
+    USART2Handle.USART_Config.USART_NoOfStopBits =
+            USART_STOPBITS_1;
+
+    USART2Handle.USART_Config.USART_WordLength =
+            USART_WORDLEN_8BITS;
+
+    USART2Handle.USART_Config.USART_ParityControl =
+            USART_PARITY_DISABLE;
+
+    USART2Handle.USART_Config.USART_HWFlowControl =
+            USART_HW_FLOW_CTRL_NONE;
+
+    USART_Init(&USART2Handle);
+
+    printf("USART OK\r\n");
+
+    /* SPI INIT */
+
+    SPI_GPIO_Init();
+
+    SPI1Handle.pSPIx = SPI1;
+
+    SPI1Handle.SPI_Config.DeviceMode =
+            SPI_DEVICE_MODE_MASTER;
+
+    SPI1Handle.SPI_Config.BusConfig =
+            SPI_BUS_CONFIG_FD;
+
+    SPI1Handle.SPI_Config.SclkSpeed =
+            SPI_SCLK_SPEED_DIV16;
+
+    SPI1Handle.SPI_Config.DFF =
+            SPI_DFF_8BITS;
+
+    SPI1Handle.SPI_Config.CPOL =
+            SPI_CPOL_LOW;
+
+    SPI1Handle.SPI_Config.CPHA =
+            SPI_CPHA_LOW;
+
+    SPI1Handle.SPI_Config.SSM =
+            SPI_SSM_EN;
+
+    SPI_Init(&SPI1Handle);
+
+    /* FLASH INIT */
+
+    W25Q_Init();
+
+    printf("Flash Init OK\r\n");
+
+    /* ERASE */
+
+    W25Q_EraseSector(0);
+
+    printf("Sector Erased\r\n");
+
+    delay_ms(100);
+
+    /* TEST DATA */
+
+    uint32_t write_data = 12345678;
+
+    uint32_t read_data = 0;
+
+    uint8_t txBuf[4];
+    uint8_t rxBuf[4];
+
+    memcpy(txBuf, &write_data, 4);
+
+    /* WRITE */
+
+    W25Q_Write(0x000000, txBuf, 4);
+
+    printf("Write Done\r\n");
+
+    delay_ms(100);
+
+    /* READ */
+
+    W25Q_Read(0x000000, rxBuf, 4);
+
+    memcpy(&read_data, rxBuf, 4);
+
+    printf("Written : %lu\r\n",
+           (unsigned long)write_data);
+
+    printf("Read    : %lu\r\n",
+           (unsigned long)read_data);
+
+    /* RAW BYTES */
+
+    printf("RAW = %02X %02X %02X %02X\r\n",
+           rxBuf[0],
+           rxBuf[1],
+           rxBuf[2],
+           rxBuf[3]);
+
+    while(1)
+    {
+
+    }
+}

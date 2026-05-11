@@ -1,0 +1,94 @@
+/*
+ * stm32l476xx_uart.h
+ *
+ *  Created on: May 8, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#ifndef INC_STM32L476XX_USART_H_
+#define INC_STM32L476XX_USART_H_
+
+#include "stm32l476xx.h"
+
+/* ===================== USART CONFIG ======================== */
+
+typedef struct {
+	uint8_t USART_Mode;
+	uint32_t USART_Baud;
+	uint8_t USART_NoOfStopBits;
+	uint8_t USART_WordLength;
+	uint8_t USART_ParityControl;
+	uint8_t USART_HWFlowControl;
+
+} USART_Config_t;
+
+/* ===================== USART HANDLE ======================= */
+
+typedef struct {
+	USART_RegDef_t *pUSARTx;
+
+	USART_Config_t USART_Config;
+
+	uint8_t *pTxBuffer;
+	uint8_t *pRxBuffer;
+
+	uint32_t TxLen;
+	uint32_t RxLen;
+
+	uint8_t TxBusyState;
+	uint8_t RxBusyState;
+
+} USART_Handle_t;
+
+/* ======================= MODES ============================= */
+
+#define USART_MODE_ONLY_TX     0
+#define USART_MODE_ONLY_RX     1
+#define USART_MODE_TXRX        2
+
+/* ===================== BAUD RATES ========================== */
+
+#define USART_STD_BAUD_9600      9600
+#define USART_STD_BAUD_115200    115200
+
+/*===================== WORD LENGTH =========================*/
+
+#define USART_WORDLEN_8BITS      0
+#define USART_WORDLEN_9BITS      1
+
+/* ===================== STOP BITS =========================== */
+
+#define USART_STOPBITS_1         0
+#define USART_STOPBITS_2         2
+
+/* ===================== PARITY ============================== */
+
+#define USART_PARITY_DISABLE     0
+#define USART_PARITY_EN_EVEN     1
+#define USART_PARITY_EN_ODD      2
+
+/*===================== FLOW CTRL ===========================*/
+
+#define USART_HW_FLOW_CTRL_NONE  0
+
+/*===================== STATES ===========================*/
+#define USART_READY        0
+#define USART_BUSY_IN_RX   1
+#define USART_BUSY_IN_TX   2
+
+/*======================== APIs =============================*/
+
+void USART_Init(USART_Handle_t *pUSARTHandle);
+
+void USART_SendData(USART_RegDef_t *pUSARTx, uint8_t *pTxBuffer, uint32_t Len);
+
+uint8_t USART_ReceiveData(USART_RegDef_t *pUSARTx, uint8_t *pRxBuffer,
+		uint32_t Len);
+
+/*======================== INTERRUPT APIs =============================*/
+uint8_t USART_ReceiveDataIT(USART_Handle_t *pUSARTHandle, uint8_t *pRxBuffer,
+		uint32_t Len);
+
+void USART_IRQHandling(USART_Handle_t *pUSARTHandle);
+
+#endif /* INC_STM32L476XX_UART_H_ */

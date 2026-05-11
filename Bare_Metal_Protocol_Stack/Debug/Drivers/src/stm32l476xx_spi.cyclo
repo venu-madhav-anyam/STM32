@@ -1,0 +1,13 @@
+../Drivers/src/stm32l476xx_spi.c:15:6:SPI_PeriClockControl	8
+../Drivers/src/stm32l476xx_spi.c:35:6:SPI_Init	6
+../Drivers/src/stm32l476xx_spi.c:94:6:SPI_SendData	5
+../Drivers/src/stm32l476xx_spi.c:124:6:SPI_ReceiveData	5
+../Drivers/src/stm32l476xx_spi.c:146:9:SPI_Transfer	3
+../Drivers/src/stm32l476xx_spi.c:157:6:SPI_IRQConfig	8
+../Drivers/src/stm32l476xx_spi.c:182:6:SPI_IRQPriorityConfig	1
+../Drivers/src/stm32l476xx_spi.c:192:9:SPI_SendData_IT	2
+../Drivers/src/stm32l476xx_spi.c:210:9:SPI_ReceiveData_IT	2
+../Drivers/src/stm32l476xx_spi.c:225:6:SPI_IRQHandling	6
+../Drivers/src/stm32l476xx_spi.c:251:13:SPI_TXE_InterruptHandle	3
+../Drivers/src/stm32l476xx_spi.c:263:13:SPI_RXNE_InterruptHandle	4
+../Drivers/src/stm32l476xx_spi.c:282:6:SPI_TransmitReceive_IT	2

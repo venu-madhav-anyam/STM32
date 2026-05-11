@@ -1,0 +1,10 @@
+10:49:30 **** Build of configuration Debug for project 34_I2C_Interrupt_BareMetal ****
+make -j12 all 
+arm-none-eabi-size  34_I2C_Interrupt_BareMetal.elf 
+   text	   data	    bss	    dec	    hex	filename
+  17856	    456	   5024	  23336	   5b28	34_I2C_Interrupt_BareMetal.elf
+Finished building: default.size.stdout
+ 
+
+10:49:30 Build Finished. 0 errors, 0 warnings. (took 149ms)
+

@@ -1,0 +1,175 @@
+/*
+ * stm32l476xx_uart.c
+ *
+ *  Created on: May 8, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "stm32l476xx_uart.h"
+
+/*===================== USART INIT ==========================*/
+
+void USART_Init(USART_Handle_t *pUSARTHandle) {
+	uint32_t temp = 0;
+
+	/* Enable clock */
+
+	if (pUSARTHandle->pUSARTx == USART2) {
+		USART2_PCLK_EN();
+	}
+
+	/* CR1 */
+
+	/* TX/RX mode */
+
+	if (pUSARTHandle->USART_Config.USART_Mode == USART_MODE_ONLY_TX) {
+		temp |= (1 << USART_CR1_TE_Pos);
+	} else if (pUSARTHandle->USART_Config.USART_Mode == USART_MODE_ONLY_RX) {
+		temp |= (1 << USART_CR1_RE_Pos);
+	} else if (pUSARTHandle->USART_Config.USART_Mode == USART_MODE_TXRX) {
+		temp |= (1 << USART_CR1_TE_Pos);
+		temp |= (1 << USART_CR1_RE_Pos);
+	}
+
+	/* Word length */
+
+	if (pUSARTHandle->USART_Config.USART_WordLength == USART_WORDLEN_9BITS) {
+		temp |= (1 << USART_CR1_M0_Pos);
+	}
+
+	/* Parity */
+
+	if (pUSARTHandle->USART_Config.USART_ParityControl == USART_PARITY_EN_EVEN) {
+		temp |= (1 << USART_CR1_PCE_Pos);
+	} else if (pUSARTHandle->USART_Config.USART_ParityControl
+			== USART_PARITY_EN_ODD) {
+		temp |= (1 << USART_CR1_PCE_Pos);
+
+		temp |= (1 << USART_CR1_PS_Pos);
+	}
+
+	pUSARTHandle->pUSARTx->CR1 = temp;
+
+	/* STOP BITS */
+
+	pUSARTHandle->pUSARTx->CR2 |= (pUSARTHandle->USART_Config.USART_NoOfStopBits
+			<< USART_CR2_STOP_Pos);
+
+	/* BAUD */
+
+	pUSARTHandle->pUSARTx->BRR = (4000000
+			/ pUSARTHandle->USART_Config.USART_Baud);
+
+	/* Enable USART */
+
+	pUSARTHandle->pUSARTx->CR1 |= (1 << USART_CR1_UE_Pos);
+}
+
+/*===================== SEND DATA ===========================*/
+
+void USART_SendData(USART_RegDef_t *pUSARTx, uint8_t *pTxBuffer, uint32_t Len) {
+	while (Len > 0) {
+		while (!(pUSARTx->ISR & USART_FLAG_TXE))
+			;
+
+		pUSARTx->TDR = *pTxBuffer;
+
+		pTxBuffer++;
+		Len--;
+	}
+
+	while (!(pUSARTx->ISR & USART_FLAG_TC))
+		;
+}
+
+/*===================== RECEIVE DATA ========================*/
+
+uint8_t USART_ReceiveData(USART_RegDef_t *pUSARTx, uint8_t *pRxBuffer,
+		uint32_t Len) {
+	uint32_t timeout;
+
+	while (Len > 0) {
+		timeout = 1000000;
+
+		/* Wait RXNE */
+		while (!(pUSARTx->ISR & USART_FLAG_RXNE)) {
+			/* Overrun Error */
+			if (pUSARTx->ISR & USART_FLAG_ORE) {
+				/* Clear ORE */
+
+				pUSARTx->ICR |= (1 << USART_ICR_ORECF_Pos);
+
+				return 0;
+			}
+
+			/* Timeout */
+			if (--timeout == 0)
+				return 0;
+		}
+
+		/* Read received byte */
+		*pRxBuffer = (uint8_t) (pUSARTx->RDR & 0xFF);
+
+		pRxBuffer++;
+
+		Len--;
+	}
+
+	return 1;
+}
+
+/*===================== INTERRUPT RECEIVE DATA ========================*/
+
+uint8_t USART_ReceiveDataIT(USART_Handle_t *pUSARTHandle, uint8_t *pRxBuffer,
+		uint32_t Len) {
+	if (pUSARTHandle->RxBusyState != USART_BUSY_IN_RX) {
+		pUSARTHandle->pRxBuffer = pRxBuffer;
+
+		pUSARTHandle->RxLen = Len;
+
+		pUSARTHandle->RxBusyState =
+		USART_BUSY_IN_RX;
+
+		/* Enable RXNE interrupt */
+		pUSARTHandle->pUSARTx->CR1 |= (1 << USART_CR1_RXNEIE_Pos);
+
+		return 1;
+	}
+
+	return 0;
+}
+
+/*===================== IRQ HANDLER ========================*/
+
+void USART_IRQHandling(USART_Handle_t *pUSARTHandle) {
+	uint32_t temp1;
+
+	temp1 = pUSARTHandle->pUSARTx->ISR;
+
+	/* ================= RXNE ================= */
+
+	if (temp1 & USART_FLAG_RXNE) {
+		if (pUSARTHandle->RxBusyState == USART_BUSY_IN_RX) {
+			*(pUSARTHandle->pRxBuffer) = (uint8_t) (pUSARTHandle->pUSARTx->RDR
+					& 0xFF);
+
+			pUSARTHandle->pRxBuffer++;
+
+			pUSARTHandle->RxLen--;
+
+			if (pUSARTHandle->RxLen == 0) {
+				/* Disable RXNE interrupt */
+				pUSARTHandle->pUSARTx->CR1 &= ~(1 << USART_CR1_RXNEIE_Pos);
+
+				pUSARTHandle->RxBusyState =
+				USART_READY;
+			}
+		}
+	}
+
+	/* ================= ORE ================= */
+
+	if (temp1 & USART_FLAG_ORE) {
+		pUSARTHandle->pUSARTx->ICR |= (1 << USART_ICR_ORECF_Pos);
+	}
+}

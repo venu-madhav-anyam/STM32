@@ -22,7 +22,6 @@
 #include <string.h>
 #include <stdio.h>
 
-volatile uint8_t spi_done = 0;
 
 #define TRIG_PIN  0   // PA0
 #define ECHO_PIN  1   // PA1
@@ -94,135 +93,18 @@ uint32_t Ultrasonic_Read(void) {
 	return time;
 }
 
-SPI_Handle_t SPI1Handle;
-
-void SPI_GPIO_Init(void) {
-	GPIO_Handle_t spiPins;
-
-	memset(&spiPins, 0, sizeof(spiPins));
-
-	spiPins.pGPIOx = GPIOA;
-
-	spiPins.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_ALTFN;
-	spiPins.GPIO_PinConfig.GPIO_PinAltFunMode = 5; // AF5 (SPI1)
-	spiPins.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-	spiPins.GPIO_PinConfig.GPIO_PinOPType = GPIO_OP_TYPE_PP;
-	spiPins.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
-
-	// SCK
-	spiPins.GPIO_PinConfig.GPIO_PinNumber = 5;
-	GPIO_Init(&spiPins);
-
-	// MISO
-	spiPins.GPIO_PinConfig.GPIO_PinNumber = 6;
-	GPIO_Init(&spiPins);
-
-	// MOSI
-	spiPins.GPIO_PinConfig.GPIO_PinNumber = 7;
-	GPIO_Init(&spiPins);
-
-	// CS (manual)
-	spiPins.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUTPUT;
-	spiPins.GPIO_PinConfig.GPIO_PinNumber = 4;
-	GPIO_Init(&spiPins);
-
-	GPIO_WriteToOutputPin(GPIOA, 4, 1); // CS HIGH
-}
-
-uint8_t print_logs = 0;
-
-void EXTI15_10_IRQHandler(void) {
-
-	GPIO_IRQHandling(13);
-	print_logs = 1;
-}
-
-/* -------- Log Variables -------- */
-#define LOG_SIZE 4
-#define MAX_LOGS 5
-
-uint32_t logCounter = 0;
-
-float debug_write;
-float debug_read;
-uint8_t read_buf[4];
-uint8_t buf[4];
-
 float dist;
 
 int main(void) {
 
-	GPIO_Handle_t Button;
-	/* -------- BUTTON PC13 -------- */
-	Button.pGPIOx = GPIOC;
-	Button.GPIO_PinConfig.GPIO_PinNumber = 13;
-	Button.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IT_FT;
-	Button.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-	Button.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
-
-	GPIO_Init(&Button);
-
-	/* -------- NVIC -------- */
-	GPIO_IRQConfig(40, 2, ENABLE);
-
-	SPI_GPIO_Init();
-
-	SPI1Handle.pSPIx = SPI1;
-
-	SPI1Handle.SPI_Config.DeviceMode = SPI_DEVICE_MODE_MASTER;
-	SPI1Handle.SPI_Config.BusConfig = SPI_BUS_CONFIG_FD;
-	SPI1Handle.SPI_Config.SclkSpeed = SPI_SCLK_SPEED_DIV16;
-	SPI1Handle.SPI_Config.DFF = SPI_DFF_8BITS;
-	SPI1Handle.SPI_Config.CPOL = SPI_CPOL_LOW;
-	SPI1Handle.SPI_Config.CPHA = SPI_CPHA_LOW;
-	SPI1Handle.SPI_Config.SSM = SPI_SSM_EN;
-
-	SPI_Init(&SPI1Handle);
-
-	W25Q_Init();
-
-	W25Q_EraseSector(0);
-
 	Ultrasonic_Init();
-
-	uint32_t addr = 0;
 
 	while (1) {
 		uint32_t time = Ultrasonic_Read();
 
 		dist = time / 38.00;
 
-		memcpy(buf, &dist, 4);
-
-		W25Q_Write(addr, buf, 4);
-
-		logCounter++;
-
 		delay_ms(10);
 
-		if (print_logs) {
-			print_logs = 0;
-
-			//uint32_t count = (logCounter < MAX_LOGS) ? logCounter : MAX_LOGS;
-
-			//for (uint32_t i = 0; i < count; i++)
-			{
-				//uint32_t index = (logCounter - count + i) % MAX_LOGS;
-				//uint32_t read_addr = index * LOG_SIZE;
-
-				W25Q_Read(addr, read_buf, 4);
-
-				memcpy(&debug_read, read_buf, 4);
-
-				//printf("[%ld] Distance = %.2f\r\n", (logCounter - i),debug_read);
-			}
-		}
-
-		addr += 4;
-
-		if (addr >= (MAX_LOGS * LOG_SIZE))
-			addr = 0;
-
-		delay_ms(100);
 	}
 }

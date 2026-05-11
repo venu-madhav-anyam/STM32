@@ -1,0 +1,92 @@
+/*
+ * stm32l476xx_adc.c
+ *
+ *  Created on: May 11, 2026
+ *      Author: Venu Madhav Anyam
+ */
+
+#include "stm32l476xx_adc.h"
+
+static void delay_ms(uint8_t a) {
+	for (volatile uint32_t i = 0; i < 100000 * a; i++)
+		;
+}
+
+void ADC_PeriClockControl(ADC_TypeDef *pADCx, uint8_t EnOrDi) {
+	if (EnOrDi == ENABLE) {
+		if (pADCx == ADC1) {
+			ADC1_CLK_ENABLE();
+		}
+	} else {
+		if (pADCx == ADC1) {
+			ADC1_CLK_DISABLE();
+		}
+	}
+}
+
+void ADC_Init(void) {
+	/* Enable ADC clock */
+	RCC->AHB2ENR |= (1 << 13);
+
+	/* Enable HSI16 */
+	RCC->CR |= (1 << 8);
+
+	while (!(RCC->CR & (1 << 10)))
+		;
+
+	/* Exit deep-power-down */
+	ADC1->CR &= ~(1 << 29);
+
+	/* Enable regulator */
+	ADC1->CR |= (1 << 28);
+
+	/* Wait regulator startup */
+	for (volatile uint32_t i = 0; i < 100000; i++) {
+		__asm("nop");
+	}
+
+	/* ADC clock = HCLK/1 */
+	ADC123_COMMON->CCR &= ~(3 << 16);
+	ADC123_COMMON->CCR |= (1 << 16);
+
+	/* Ensure ADEN = 0 */
+	if (ADC1->CR & (1 << 0)) {
+		ADC1->CR |= (1 << 1);
+
+		while (ADC1->CR & (1 << 0))
+			;
+	}
+
+	/* Ensure ADCAL = 0 */
+	while (ADC1->CR & (1 << 31))
+		;
+
+	/* Clear ADRDY */
+	ADC1->ISR |= (1 << 0);
+
+	/* Enable ADC */
+	ADC1->CR |= (1 << 0);
+
+	/* Wait ADRDY */
+	while (!(ADC1->ISR & (1 << 0)))
+		;
+
+	/* Channel 5 */
+	ADC1->SQR1 &= ~(0x1F << 6);
+	ADC1->SQR1 |= (5 << 6);
+
+	/* Sample time */
+	ADC1->SMPR1 |= (7 << 15);
+}
+
+uint16_t ADC_Read(void) {
+	/* Start conversion */
+	ADC1->CR |= (1 << 2);
+
+	/* Wait EOC */
+	while (!(ADC1->ISR & (1 << 2)))
+		;
+
+	return ADC1->DR;
+}
+

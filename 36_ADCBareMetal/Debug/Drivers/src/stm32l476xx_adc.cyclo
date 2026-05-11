@@ -1,0 +1,4 @@
+../Drivers/src/stm32l476xx_adc.c:10:13:delay_ms	2
+../Drivers/src/stm32l476xx_adc.c:15:6:ADC_PeriClockControl	4
+../Drivers/src/stm32l476xx_adc.c:27:6:ADC_Init	7
+../Drivers/src/stm32l476xx_adc.c:99:10:ADC_Read	2

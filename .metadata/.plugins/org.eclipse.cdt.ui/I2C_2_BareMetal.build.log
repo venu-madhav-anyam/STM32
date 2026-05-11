@@ -1,0 +1,18 @@
+17:55:43 **** Incremental Build of configuration Debug for project I2C_2_BareMetal ****
+make -j12 all 
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/I2C_2_BareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/main.o"
+arm-none-eabi-gcc "../Src/opt3001.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/I2C_2_BareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/opt3001.d" -MT"Src/opt3001.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/opt3001.o"
+arm-none-eabi-gcc -o "I2C_2_BareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\I2C_2_BareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="I2C_2_BareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: I2C_2_BareMetal.elf
+ 
+arm-none-eabi-size  I2C_2_BareMetal.elf 
+arm-none-eabi-objdump -h -S I2C_2_BareMetal.elf  > "I2C_2_BareMetal.list"
+   text	   data	    bss	    dec	    hex	filename
+   2992	      0	   1584	   4576	   11e0	I2C_2_BareMetal.elf
+Finished building: default.size.stdout
+ 
+Finished building: I2C_2_BareMetal.list
+ 
+
+17:55:43 Build Finished. 0 errors, 0 warnings. (took 525ms)
+
