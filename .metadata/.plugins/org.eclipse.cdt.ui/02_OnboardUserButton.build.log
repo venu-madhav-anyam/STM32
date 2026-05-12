@@ -1,0 +1,16 @@
+14:15:42 **** Build of configuration Debug for project 02_OnboardUserButton ****
+make -j12 all 
+arm-none-eabi-gcc -o "02_OnboardUserButton.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\02_OnboardUserButton\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="02_OnboardUserButton.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 02_OnboardUserButton.elf
+ 
+arm-none-eabi-size  02_OnboardUserButton.elf 
+arm-none-eabi-objdump -h -S 02_OnboardUserButton.elf  > "02_OnboardUserButton.list"
+   text	   data	    bss	    dec	    hex	filename
+   2520	     12	   1588	   4120	   1018	02_OnboardUserButton.elf
+Finished building: default.size.stdout
+ 
+Finished building: 02_OnboardUserButton.list
+ 
+
+14:15:42 Build Finished. 0 errors, 0 warnings. (took 467ms)
+

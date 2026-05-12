@@ -3488,3 +3488,69 @@ C Model Exception: C Model Status [Element stm32l476xx_adc.c does not exist.]
 	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:207)
 !SUBENTRY 1 org.eclipse.cdt.core 4 969 2026-05-11 14:13:01.789
 !MESSAGE Element stm32l476xx_adc.c does not exist.
+!SESSION 2026-05-12 14:02:34.415 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_IN
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -data D:\STM32
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-05-12 14:02:36.188
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2026-05-12 14:02:41.075
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-05-12 14:02:41.077
+!MESSAGE Log4j2 initialized with config file D:\STM32\.metadata\.log4j2.xml
+
+!ENTRY org.eclipse.cdt.ui 4 0 2026-05-12 14:02:57.175
+!MESSAGE Error in CDT UI during reconcile
+!STACK 1
+C Model Exception: C Model Status [Element main.c does not exist.]
+	at org.eclipse.cdt.internal.core.model.CElement.newNotPresentException(CElement.java:485)
+	at org.eclipse.cdt.internal.core.model.TranslationUnit.makeConsistent(TranslationUnit.java:583)
+	at org.eclipse.cdt.internal.core.model.ReconcileWorkingCopyOperation.executeOperation(ReconcileWorkingCopyOperation.java:65)
+	at org.eclipse.cdt.internal.core.model.CModelOperation.execute(CModelOperation.java:346)
+	at org.eclipse.cdt.internal.core.model.CModelOperation.run(CModelOperation.java:613)
+	at org.eclipse.cdt.internal.core.model.CModelOperation.runOperation(CModelOperation.java:641)
+	at org.eclipse.cdt.internal.core.model.WorkingCopy.reconcile(WorkingCopy.java:365)
+	at org.eclipse.cdt.internal.ui.text.CReconcilingStrategy.reconcile(CReconcilingStrategy.java:79)
+	at org.eclipse.cdt.internal.ui.text.CReconcilingStrategy.reconcile(CReconcilingStrategy.java:64)
+	at org.eclipse.cdt.internal.ui.text.CompositeReconcilingStrategy.reconcile(CompositeReconcilingStrategy.java:89)
+	at org.eclipse.cdt.internal.ui.text.CCompositeReconcilingStrategy.reconcile(CCompositeReconcilingStrategy.java:90)
+	at org.eclipse.jface.text.reconciler.MonoReconciler.process(MonoReconciler.java:78)
+	at org.eclipse.cdt.internal.ui.text.CReconciler.process(CReconciler.java:346)
+	at org.eclipse.jface.text.reconciler.AbstractReconciler$BackgroundThread.run(AbstractReconciler.java:207)
+!SUBENTRY 1 org.eclipse.cdt.core 4 969 2026-05-12 14:02:57.176
+!MESSAGE Element main.c does not exist.
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-05-12 14:03:05.562
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:08:32.622
+!MESSAGE Indexed '20_SPI_Driver' (9 sources, 64 headers) in 0.644 sec: 2,718 declarations; 5,736 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.024%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:09:35.289
+!MESSAGE Indexed '21_SPI_Interrupt' (8 sources, 60 headers) in 0.328 sec: 2,570 declarations; 5,625 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.024%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:10:15.725
+!MESSAGE Indexed '22_I2C_Driver' (7 sources, 5 headers) in 0.071 sec: 456 declarations; 1,541 references; 13 unresolved inclusions; 0 syntax errors; 293 unresolved names (13%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:10:52.195
+!MESSAGE Indexed '23_I2C_Interrupt' (7 sources, 58 headers) in 0.238 sec: 2,391 declarations; 4,846 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.028%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:12:03.203
+!MESSAGE Indexed '24_UART_Driver' (8 sources, 6 headers) in 0.076 sec: 505 declarations; 1,688 references; 13 unresolved inclusions; 0 syntax errors; 324 unresolved names (13%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:12:41.805
+!MESSAGE Indexed '25_UART_Interrupt' (9 sources, 64 headers) in 0.274 sec: 2,818 declarations; 5,836 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.023%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:13:27.258
+!MESSAGE Indexed '27_GPIO_BareMetal' (4 sources, 2 headers) in 0.027 sec: 211 declarations; 612 references; 11 unresolved inclusions; 0 syntax errors; 132 unresolved names (14%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:14:17.259
+!MESSAGE Indexed '28_GPIO_Interrupt_BareMetal' (5 sources, 3 headers) in 0.033 sec: 285 declarations; 803 references; 12 unresolved inclusions; 0 syntax errors; 185 unresolved names (15%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-05-12 14:15:35.023
+!MESSAGE Indexed '02_OnboardUserButton' (19 sources, 150 headers) in 6.51 sec: 28,346 declarations; 60,545 references; 7 unresolved inclusions; 137 syntax errors; 1,940 unresolved names (2.1%)

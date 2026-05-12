@@ -1,92 +1,13 @@
-14:13:17 **** Incremental Build of configuration Debug for project 36_ADCBareMetal ****
+14:15:42 **** Build of configuration Debug for project 02_OnboardUserButton ****
 make -j12 all 
-arm-none-eabi-gcc "../Drivers/src/stm32l476xx_adc.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/36_ADCBareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_adc.d" -MT"Drivers/src/stm32l476xx_adc.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_adc.o"
-../Drivers/src/stm32l476xx_adc.c:10:13: warning: 'delay_ms' defined but not used [-Wunused-function]
-   10 | static void delay_ms(uint8_t a) {
-      |             ^~~~~~~~
-arm-none-eabi-gcc -o "36_ADCBareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\36_ADCBareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="36_ADCBareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: 36_ADCBareMetal.elf
+arm-none-eabi-gcc -o "02_OnboardUserButton.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\02_OnboardUserButton\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="02_OnboardUserButton.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 02_OnboardUserButton.elf
  
-arm-none-eabi-size  36_ADCBareMetal.elf 
-arm-none-eabi-objdump -h -S 36_ADCBareMetal.elf  > "36_ADCBareMetal.list"
+arm-none-eabi-size  02_OnboardUserButton.elf 
+arm-none-eabi-objdump -h -S 02_OnboardUserButton.elf  > "02_OnboardUserButton.list"
    text	   data	    bss	    dec	    hex	filename
-   1872	      0	   1568	   3440	    d70	36_ADCBareMetal.elf
+   2520	     12	   1588	   4120	   1018	02_OnboardUserButton.elf
 Finished building: default.size.stdout
  
-Finished building: 36_ADCBareMetal.list
- 
-14:13:26 **** Incremental Build of configuration Debug for project 36_ADCBareMetal ****
-make -j12 all 
-arm-none-eabi-size  36_ADCBareMetal.elf 
-   text	   data	    bss	    dec	    hex	filename
-   1872	      0	   1568	   3440	    d70	36_ADCBareMetal.elf
-Finished building: default.size.stdout
- 
-14:17:54 **** Incremental Build of configuration Debug for project 36_ADCBareMetal ****
-make -j12 all 
-arm-none-eabi-gcc "../Drivers/src/stm32l476xx_adc.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/36_ADCBareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_adc.d" -MT"Drivers/src/stm32l476xx_adc.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_adc.o"
-../Drivers/src/stm32l476xx_adc.c:10:13: warning: 'delay_ms' defined but not used [-Wunused-function]
-   10 | static void delay_ms(uint8_t a) {
-      |             ^~~~~~~~
-arm-none-eabi-gcc -o "36_ADCBareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\36_ADCBareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="36_ADCBareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: 36_ADCBareMetal.elf
- 
-arm-none-eabi-size  36_ADCBareMetal.elf 
-arm-none-eabi-objdump -h -S 36_ADCBareMetal.elf  > "36_ADCBareMetal.list"
-   text	   data	    bss	    dec	    hex	filename
-   1880	      0	   1568	   3448	    d78	36_ADCBareMetal.elf
-Finished building: default.size.stdout
- 
-Finished building: 36_ADCBareMetal.list
- 
-14:21:41 **** Incremental Build of configuration Debug for project 36_ADCBareMetal ****
-make -j12 all 
-arm-none-eabi-gcc "../Drivers/src/stm32l476xx_adc.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/36_ADCBareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_adc.d" -MT"Drivers/src/stm32l476xx_adc.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_adc.o"
-../Drivers/src/stm32l476xx_adc.c:10:13: warning: 'delay_ms' defined but not used [-Wunused-function]
-   10 | static void delay_ms(uint8_t a) {
-      |             ^~~~~~~~
-arm-none-eabi-gcc -o "36_ADCBareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\36_ADCBareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="36_ADCBareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: 36_ADCBareMetal.elf
- 
-arm-none-eabi-size  36_ADCBareMetal.elf 
-arm-none-eabi-objdump -h -S 36_ADCBareMetal.elf  > "36_ADCBareMetal.list"
-   text	   data	    bss	    dec	    hex	filename
-   1880	      0	   1568	   3448	    d78	36_ADCBareMetal.elf
-Finished building: default.size.stdout
- 
-Finished building: 36_ADCBareMetal.list
- 
-14:22:44 **** Incremental Build of configuration Debug for project 36_ADCBareMetal ****
-make -j12 all 
-arm-none-eabi-gcc "../Drivers/src/stm32l476xx_adc.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/36_ADCBareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_adc.d" -MT"Drivers/src/stm32l476xx_adc.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_adc.o"
-../Drivers/src/stm32l476xx_adc.c:10:13: warning: 'delay_ms' defined but not used [-Wunused-function]
-   10 | static void delay_ms(uint8_t a) {
-      |             ^~~~~~~~
-arm-none-eabi-gcc -o "36_ADCBareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\36_ADCBareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="36_ADCBareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: 36_ADCBareMetal.elf
- 
-arm-none-eabi-size  36_ADCBareMetal.elf 
-arm-none-eabi-objdump -h -S 36_ADCBareMetal.elf  > "36_ADCBareMetal.list"
-   text	   data	    bss	    dec	    hex	filename
-   1928	      0	   1568	   3496	    da8	36_ADCBareMetal.elf
-Finished building: default.size.stdout
- 
-Finished building: 36_ADCBareMetal.list
- 
-14:30:04 **** Incremental Build of configuration Debug for project 36_ADCBareMetal ****
-make -j12 all 
-arm-none-eabi-gcc "../Drivers/src/stm32l476xx_adc.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/36_ADCBareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_adc.d" -MT"Drivers/src/stm32l476xx_adc.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_adc.o"
-../Drivers/src/stm32l476xx_adc.c:10:13: warning: 'delay_ms' defined but not used [-Wunused-function]
-   10 | static void delay_ms(uint8_t a) {
-      |             ^~~~~~~~
-arm-none-eabi-gcc -o "36_ADCBareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\36_ADCBareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="36_ADCBareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: 36_ADCBareMetal.elf
- 
-arm-none-eabi-size  36_ADCBareMetal.elf 
-arm-none-eabi-objdump -h -S 36_ADCBareMetal.elf  > "36_ADCBareMetal.list"
-   text	   data	    bss	    dec	    hex	filename
-   1920	      0	   1568	   3488	    da0	36_ADCBareMetal.elf
-Finished building: default.size.stdout
- 
-Finished building: 36_ADCBareMetal.list
+Finished building: 02_OnboardUserButton.list
  

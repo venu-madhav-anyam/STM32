@@ -1,0 +1,20 @@
+14:13:46 **** Build of configuration Debug for project 27_GPIO_BareMetal ****
+make -j12 all 
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/27_GPIO_BareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/main.o"
+arm-none-eabi-gcc "../Src/syscalls.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/27_GPIO_BareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/syscalls.d" -MT"Src/syscalls.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/syscalls.o"
+arm-none-eabi-gcc "../Src/sysmem.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/27_GPIO_BareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/sysmem.d" -MT"Src/sysmem.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Src/sysmem.o"
+arm-none-eabi-gcc "../Drivers/src/stm32l476xx_gpio.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32L4 -DSTM32 -DSTM32L476RGTx -c -I../Inc -I"D:/STM32/27_GPIO_BareMetal/Drivers/inc" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Drivers/src/stm32l476xx_gpio.d" -MT"Drivers/src/stm32l476xx_gpio.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/src/stm32l476xx_gpio.o"
+arm-none-eabi-gcc -o "27_GPIO_BareMetal.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\27_GPIO_BareMetal\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="27_GPIO_BareMetal.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 27_GPIO_BareMetal.elf
+ 
+arm-none-eabi-size  27_GPIO_BareMetal.elf 
+arm-none-eabi-objdump -h -S 27_GPIO_BareMetal.elf  > "27_GPIO_BareMetal.list"
+   text	   data	    bss	    dec	    hex	filename
+   1700	      0	   1568	   3268	    cc4	27_GPIO_BareMetal.elf
+Finished building: default.size.stdout
+ 
+Finished building: 27_GPIO_BareMetal.list
+ 
+
+14:13:47 Build Finished. 0 errors, 0 warnings. (took 519ms)
+
