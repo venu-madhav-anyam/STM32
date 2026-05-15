@@ -1,0 +1,10 @@
+16:09:38 **** Incremental Build of configuration Debug for project 47_Task_Delay_FreeRTOS ****
+make -j12 all 
+arm-none-eabi-size  47_Task_Delay_FreeRTOS.elf 
+   text	   data	    bss	    dec	    hex	filename
+  22096	    108	   5988	  28192	   6e20	47_Task_Delay_FreeRTOS.elf
+Finished building: default.size.stdout
+ 
+
+16:09:39 Build Finished. 0 errors, 0 warnings. (took 262ms)
+

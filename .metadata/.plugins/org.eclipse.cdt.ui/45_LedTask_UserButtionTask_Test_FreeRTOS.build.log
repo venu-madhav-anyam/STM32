@@ -1,0 +1,17 @@
+11:31:32 **** Incremental Build of configuration Debug for project 45_LedTask_UserButtionTask_Test_FreeRTOS ****
+make -j12 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32L476xx -c -I../Core/Inc -I../Drivers/STM32L4xx_HAL_Driver/Inc -I../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "45_LedTask_UserButtionTask_Test_FreeRTOS.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\45_LedTask_UserButtionTask_Test_FreeRTOS\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="45_LedTask_UserButtionTask_Test_FreeRTOS.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 45_LedTask_UserButtionTask_Test_FreeRTOS.elf
+ 
+arm-none-eabi-size  45_LedTask_UserButtionTask_Test_FreeRTOS.elf 
+arm-none-eabi-objdump -h -S 45_LedTask_UserButtionTask_Test_FreeRTOS.elf  > "45_LedTask_UserButtionTask_Test_FreeRTOS.list"
+   text	   data	    bss	    dec	    hex	filename
+  11548	     20	   5516	  17084	   42bc	45_LedTask_UserButtionTask_Test_FreeRTOS.elf
+Finished building: default.size.stdout
+ 
+Finished building: 45_LedTask_UserButtionTask_Test_FreeRTOS.list
+ 
+
+11:31:33 Build Finished. 0 errors, 0 warnings. (took 876ms)
+

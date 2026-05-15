@@ -1,4 +1,4 @@
-14:07:35 **** Build of configuration Debug for project 36_ADCBareMetal ****
+09:30:58 **** Build of configuration Debug for project 36_ADCBareMetal ****
 make -j12 all 
 arm-none-eabi-size  36_ADCBareMetal.elf 
    text	   data	    bss	    dec	    hex	filename
@@ -6,5 +6,5 @@ arm-none-eabi-size  36_ADCBareMetal.elf
 Finished building: default.size.stdout
  
 
-14:07:36 Build Finished. 0 errors, 0 warnings. (took 229ms)
+09:30:58 Build Finished. 0 errors, 0 warnings. (took 203ms)
 

@@ -1,12 +1,7 @@
-/*
- * stm32l476xx_i2c.h
- *
- *  Created on: May 6, 2026
- *      Author: Venu Madhav Anyam
- */
 
-#ifndef INC_STM32L476XX_I2C_H_
-#define INC_STM32L476XX_I2C_H_
+#ifndef INC_STM32L476XX_I2C_DRIVERS_H_
+#define INC_STM32L476XX_I2C_DRIVERS_H_
+
 
 #include "stm32l476xx.h"
 
@@ -21,31 +16,20 @@ typedef struct {
 typedef struct {
 	I2C_TypeDef *pI2Cx;
 	I2C_Config_t I2C_Config;
+	uint8_t      *pTxBuffer;   // To store app Tx buffer address
+    uint8_t      *pRxBuffer;   // To store app Rx buffer address
 
-	uint8_t *pTxBuffer;
-	uint8_t *pRxBuffer;
+    uint32_t     TxLen;        // To store Tx len
+	uint32_t     RxLen;        // To store Rx len
 
-	uint32_t TxLen;
-	uint32_t RxLen;
+    uint8_t      TxRxState;    // To store communication state
+    uint8_t      DevAddr;      // To store slave/device address
 
-	uint8_t TxRxState;
-
-	uint8_t DevAddr;
-
-	uint8_t RepeatedStart;
-
-	uint8_t RegAddr;
-
-	uint8_t RegAddrSent;
+	uint32_t     RxSize;       // To store Rx size
+    uint8_t      Sr;
 
 } I2C_Handle_t;
 
-//STATES
-#define I2C_READY      0
-#define I2C_BUSY_TX    1
-#define I2C_BUSY_RX    2
-
-//FLAGS
 #define I2C_ISR_TXIS      (1 << 1)
 #define I2C_ISR_RXNE      (1 << 2)
 #define I2C_ISR_ADDR      (1 << 3)
@@ -66,6 +50,15 @@ typedef struct {
 #define I2C_FM_DUTY_2				0
 #define I2C_FM_DUTY_16_9			1
 
+#define I2C_READY      0
+#define I2C_BUSY_IN_RX 1
+#define I2C_BUSY_IN_TX 2
+
+#define I2C_ENABLE_SR   ENABLE
+#define I2C_DISABLE_SR  DISABLE
+
+#define NO_PR_BITS_IMPLEMENTED 4
+
 //FUNCTIONS
 
 void I2C_PeriClockControl(I2C_TypeDef *pI2Cx, uint8_t EnOrDi);
@@ -85,10 +78,16 @@ void delay_ms(uint32_t time);
 void I2C_MasterWriteRead(I2C_Handle_t *pI2CHandle, uint8_t SlaveAddr,
 		uint8_t *pTxBuffer, uint32_t TxLen, uint8_t *pRxBuffer, uint32_t RxLen);
 
-uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t *pI2CHandle, uint8_t SlaveAddr,
-		uint8_t reg, uint8_t *pRxBuffer, uint32_t Len);
+void I2C_MasterSendDataIT(I2C_Handle_t *pI2CHandle,
+                          uint8_t SlaveAddr,
+                          uint8_t *pTxBuffer,
+                          uint32_t Len);
 
-void I2C_IRQHandling(I2C_Handle_t *pI2CHandle);
-void I2C_IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t EnorDi);
+uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t *pI2CHandle,uint8_t *pRxBuffer, uint32_t Len);
 
-#endif /* INC_STM32L476XX_I2C_H_ */
+/* IRQ Configuration and ISR handling */
+void I2C_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnOrDi);
+
+void I2C_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
+
+#endif /* INC_STM32L476XX_I2C_DRIVERS_H_ */

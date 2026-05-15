@@ -1,9 +1,4 @@
-/*
- * stm32l476xx_i2c.c
- *
- *  Created on: May 6, 2026
- *      Author: Venu Madhav Anyam
- */
+
 
 #include "stm32l476xx_i2c.h"
 
@@ -235,150 +230,126 @@ void I2C_ScanBus(I2C_Handle_t *pI2CHandle) {
 	//printf("Scan Complete\r\n");
 }
 
-uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t *pI2CHandle, uint8_t SlaveAddr,
-		uint8_t reg, uint8_t *pRxBuffer, uint32_t Len) {
-	if (pI2CHandle->TxRxState != I2C_READY)
-		return 0;
+void I2C_MasterSendDataIT(I2C_Handle_t *pI2CHandle,
+                          uint8_t SlaveAddr,
+                          uint8_t *pTxBuffer,
+                          uint32_t Len)
+{
+	 /* Store buffer information */
+	    pI2CHandle->pTxBuffer = pTxBuffer;
+	    pI2CHandle->TxLen     = Len;
+	    pI2CHandle->TxRxState = I2C_BUSY_IN_TX;
 
-	pI2CHandle->RegAddrSent = 0;
+	    /* Clear flags */
+	    pI2CHandle->pI2Cx->ICR |=
+	            I2C_ICR_STOPCF |
+	            I2C_ICR_NACKCF;
 
-	pI2CHandle->TxRxState = I2C_BUSY_RX;
+	    /* Configure transfer */
+	    pI2CHandle->pI2Cx->CR2 = 0;
 
-	pI2CHandle->DevAddr = SlaveAddr;
+	    pI2CHandle->pI2Cx->CR2 |=
+	            (SlaveAddr << 1);
 
-	pI2CHandle->RegAddr = reg;
+	    pI2CHandle->pI2Cx->CR2 |=
+	            (Len << I2C_CR2_NBYTES_Pos);
 
-	pI2CHandle->pRxBuffer = pRxBuffer;
+	    pI2CHandle->pI2Cx->CR2 |=
+	            (1 << I2C_CR2_AUTOEND_Pos);
 
-	pI2CHandle->RxLen = Len;
+	    /* Enable Interrupts */
+	    pI2CHandle->pI2Cx->CR1 |=
+	            (1 << I2C_CR1_TXIE_Pos);
 
-	/* Clear flags */
-	pI2CHandle->pI2Cx->ICR |=
-	I2C_ICR_STOPCF |
-	I2C_ICR_NACKCF;
+	    pI2CHandle->pI2Cx->CR1 |=
+	            (1 << I2C_CR1_TCIE_Pos);
 
-	/* WRITE REGISTER ADDRESS FIRST */
+	    pI2CHandle->pI2Cx->CR1 |=
+	            (1 << I2C_CR1_STOPIE_Pos);
 
-	pI2CHandle->pI2Cx->CR2 = 0;
+	    pI2CHandle->pI2Cx->CR1 |=
+	            (1 << I2C_CR1_ERRIE_Pos);
 
-	pI2CHandle->pI2Cx->CR2 |= (SlaveAddr << 1);
+	    /* Generate START */
+	    pI2CHandle->pI2Cx->CR2 |=
+	            (1 << I2C_CR2_START_Pos);
+	}
 
-	pI2CHandle->pI2Cx->CR2 |= (1 << I2C_CR2_NBYTES_Pos);
 
-	/* START */
-	pI2CHandle->pI2Cx->CR2 |= (1 << I2C_CR2_START_Pos);
+uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t *pI2CHandle,uint8_t *pRxBuffer, uint32_t Len)
+{
+    uint8_t busystate = pI2CHandle->TxRxState;
 
-	/* Enable interrupts */
-	pI2CHandle->pI2Cx->CR1 |= (1 << I2C_CR1_TXIE_Pos) | (1 << I2C_CR1_RXIE_Pos)
-			| (1 << I2C_CR1_TCIE_Pos) | (1 << I2C_CR1_STOPIE_Pos)
-			| (1 << I2C_CR1_NACKIE_Pos);
+    if((busystate != I2C_BUSY_IN_TX) &&
+       (busystate != I2C_BUSY_IN_RX))
+    {
+        pI2CHandle->pRxBuffer = pRxBuffer;
+        pI2CHandle->RxLen     = Len;
+        pI2CHandle->RxSize    = Len;
 
-	return 1;
+        pI2CHandle->TxRxState = I2C_BUSY_IN_RX;
+
+        /* Generate START condition */
+        pI2CHandle->pI2Cx->CR1 |= (1<<I2C_CR2_START_Pos);
+
+        /* Enable Interrupts */
+        pI2CHandle->pI2Cx->CR1 |=
+                (1 << I2C_CR1_TXIE_Pos);
+
+        pI2CHandle->pI2Cx->CR1 |=
+                (1 << I2C_CR1_TCIE_Pos);
+
+        pI2CHandle->pI2Cx->CR1 |=
+                (1 << I2C_CR1_STOPIE_Pos);
+
+        pI2CHandle->pI2Cx->CR1 |=
+                (1 << I2C_CR1_ERRIE_Pos);
+    }
+
+    return busystate;
+}
+/* IRQ Configuration and ISR handling */
+
+void I2C_IRQInterruptConfig(uint8_t IRQNumber,
+                            uint8_t EnOrDi)
+{
+    if(EnOrDi == ENABLE)
+    {
+        if(IRQNumber <= 31)
+        {
+            *NVIC_ISER0 |=
+                    (1 << IRQNumber);
+        }
+        else if(IRQNumber > 31 &&
+                IRQNumber < 64)
+        {
+            *NVIC_ISER1 |=
+                    (1 << (IRQNumber % 32));
+        }
+    }
+    else
+    {
+        if(IRQNumber <= 31)
+        {
+            *NVIC_ICER0 |=
+                    (1 << IRQNumber);
+        }
+        else if(IRQNumber > 31 &&
+                IRQNumber < 64)
+        {
+            *NVIC_ICER1 |=
+                    (1 << (IRQNumber % 32));
+        }
+    }
 }
 
-void I2C_IRQHandling(I2C_Handle_t *pI2CHandle) {
-	uint32_t isr;
+void I2C_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority)
+{
+    uint8_t iprx      = IRQNumber / 4;
+    uint8_t iprx_sec  = IRQNumber % 4;
 
-	isr = pI2CHandle->pI2Cx->ISR;
+    uint8_t shift_amount = (8 * iprx_sec) + (8 - NO_PR_BITS_IMPLEMENTED);
 
-	/* ================= TXIS ================= */
-
-	if (isr & I2C_ISR_TXIS) {
-		if (pI2CHandle->RegAddrSent == 0) {
-			pI2CHandle->pI2Cx->TXDR = pI2CHandle->RegAddr;
-
-			pI2CHandle->RegAddrSent = 1;
-		}
-	}
-
-	/* ================= TC ================= */
-
-	if (isr & I2C_ISR_TC) {
-		pI2CHandle->pI2Cx->CR2 = 0;
-
-		pI2CHandle->pI2Cx->CR2 |= (pI2CHandle->DevAddr << 1);
-
-		/* READ */
-		pI2CHandle->pI2Cx->CR2 |= (1 << I2C_CR2_RD_WRN_Pos);
-
-		/* NBYTES */
-		pI2CHandle->pI2Cx->CR2 |= (pI2CHandle->RxLen <<
-		I2C_CR2_NBYTES_Pos);
-
-		/* AUTOEND */
-		pI2CHandle->pI2Cx->CR2 |= (1 << I2C_CR2_AUTOEND_Pos);
-
-		/* RESTART */
-		pI2CHandle->pI2Cx->CR2 |= (1 << I2C_CR2_START_Pos);
-	}
-
-	/* ================= RXNE ================= */
-
-	if (isr & I2C_ISR_RXNE) {
-		*(pI2CHandle->pRxBuffer) = pI2CHandle->pI2Cx->RXDR;
-
-		pI2CHandle->pRxBuffer++;
-
-		pI2CHandle->RxLen--;
-	}
-
-	/* ================= STOPF ================= */
-
-	if (isr & I2C_ISR_STOPF) {
-		pI2CHandle->pI2Cx->ICR |=
-		I2C_ICR_STOPCF;
-
-		/* Disable interrupts */
-		pI2CHandle->pI2Cx->CR1 &= ~((1 << I2C_CR1_TXIE_Pos)
-				| (1 << I2C_CR1_RXIE_Pos) | (1 << I2C_CR1_TCIE_Pos)
-				| (1 << I2C_CR1_STOPIE_Pos) | (1 << I2C_CR1_NACKIE_Pos));
-
-		pI2CHandle->pI2Cx->CR2 = 0;
-
-		pI2CHandle->TxRxState =
-		I2C_READY;
-	}
-
-	/* ================= NACK ================= */
-
-	if (isr & I2C_ISR_NACKF) {
-		pI2CHandle->pI2Cx->ICR |=
-		I2C_ICR_NACKCF;
-
-		pI2CHandle->TxRxState =
-		I2C_READY;
-	}
-}
-
-void I2C_IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t EnorDi) {
-	/* ================= ENABLE / DISABLE ================= */
-
-	if (EnorDi == ENABLE) {
-		if (IRQNumber <= 31) {
-			*NVIC_ISER0 |= (1 << IRQNumber);
-		} else if (IRQNumber < 64) {
-			*NVIC_ISER1 |= (1 << (IRQNumber % 32));
-		} else if (IRQNumber < 96) {
-			*NVIC_ISER2 |= (1 << (IRQNumber % 64));
-		}
-	} else {
-		if (IRQNumber <= 31) {
-			*NVIC_ICER0 |= (1 << IRQNumber);
-		} else if (IRQNumber < 64) {
-			*NVIC_ICER1 |= (1 << (IRQNumber % 32));
-		} else if (IRQNumber < 96) {
-			*NVIC_ICER2 |= (1 << (IRQNumber % 64));
-		}
-	}
-
-	/* ================= PRIORITY ================= */
-
-	uint8_t iprx = IRQNumber / 4;
-
-	uint8_t iprx_section = IRQNumber % 4;
-
-	uint8_t shift_amount = (8 * iprx_section) + (8 - NO_PR_BITS_IMPLEMENTED);
-
-	*(NVIC_PR_BASE_ADDR + iprx) |= (IRQPriority << shift_amount);
+    *(NVIC_PR_BASE_ADDR + iprx) |= (IRQPriority << shift_amount);
 }
 

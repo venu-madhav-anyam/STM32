@@ -1,4 +1,0 @@
-../Src/opt3001.c:11:6:OPT3001_WriteReg	1
-../Src/opt3001.c:24:10:OPT3001_ReadReg	6
-../Src/opt3001.c:93:6:OPT3001_Init	1
-../Src/opt3001.c:100:5:OPT3001_ReadLux	1

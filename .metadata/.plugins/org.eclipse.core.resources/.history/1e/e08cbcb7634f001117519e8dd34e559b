@@ -1,0 +1,294 @@
+/* USER CODE BEGIN Header */
+/**
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include <stdio.h>
+#include <string.h>
+
+UART_HandleTypeDef huart2;
+
+TaskHandle_t menuTaskHandle;
+TaskHandle_t uartTaskHandle;
+TaskHandle_t cmdHandleTask;
+TaskHandle_t cmdProcessTask;
+
+QueueHandle_t uart_write_queue;
+QueueHandle_t command_queue;
+
+uint8_t rx_byte;
+char rx_buffer[50];
+uint8_t rx_index = 0;
+
+char uart_msg[64];
+
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
+void menu_print_task(void *parameters);
+void uart_write_task(void *parameters);
+void cmd_handling_task(void *parameters);
+void cmd_processing_task(void *parameters);
+void delay_blocking(volatile uint32_t count);
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	if (huart->Instance == USART2) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+		//Store character
+		rx_buffer[rx_index++] = rx_byte;
+
+		//ENTER key received
+		if (rx_byte == '\r' || rx_byte == '\n') {
+			rx_buffer[rx_index - 1] = '\0';
+
+			// Send command to queue
+			xQueueSendFromISR(command_queue, rx_buffer,
+					&xHigherPriorityTaskWoken);
+
+			rx_index = 0;
+		}
+
+		// Restart interrupt reception
+		HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+}
+
+int main(void) {
+	HAL_Init();
+
+	SystemClock_Config();
+
+	MX_GPIO_Init();
+
+	MX_USART2_UART_Init();
+
+	//Create Queues
+	uart_write_queue = xQueueCreate(5, sizeof(uart_msg));
+
+	command_queue = xQueueCreate(5, sizeof(rx_buffer));
+
+	if (uart_write_queue != NULL && command_queue != NULL) {
+		//Create Tasks
+		xTaskCreate(menu_print_task, "Menu_Task", 512, NULL, 1,
+				&menuTaskHandle);
+
+		xTaskCreate(uart_write_task, "UART_Task", 512, NULL, 1, NULL);
+
+		xTaskCreate(cmd_handling_task, "CMD_Handle", 512, NULL, 1,
+				&cmdHandleTask);
+
+//		xTaskCreate(cmd_processing_task, "CMD_Process", 512, NULL, 1,
+//				&cmdProcessTask);
+
+		HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+		printf("Queues and Tasks Created successfully..!\r\n");
+
+		vTaskStartScheduler();
+	} else
+		printf("Queue Creation failed..!\r\n");
+
+	while (1) {
+	}
+}
+
+// Task 1 - Print menu into UART queue
+void menu_print_task(void *parameters) {
+	char menu[] = "\r\n"
+			"==== MENU ====\r\n"
+			"on -> LED ON\r\n"
+			"off -> LED OFF\r\n"
+			"toggle -> LED TOGGLE\r\n";
+
+	while (1) {
+		xQueueSend(uart_write_queue, menu, portMAX_DELAY);
+
+		printf("Menu print Task Running..!\r\n");
+		vTaskDelay(pdMS_TO_TICKS(5000));
+		//delay_blocking(5000);
+	}
+}
+
+// Task 2 - UART writer task
+void uart_write_task(void *parameters) {
+	char msg[64];
+	printf("Uart Write Task Running..!\r\n");
+	while (1) {
+		if (xQueueReceive(uart_write_queue, msg, portMAX_DELAY) == pdPASS) {
+			HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg),
+			HAL_MAX_DELAY);
+		}
+	}
+}
+
+// Task 3 - Simulate UART command reception
+void cmd_handling_task(void *parameters) {
+	char cmd[50];
+	printf("CMD Handling Task Running..!\r\n");
+	while (1) {
+		if (xQueueReceive(command_queue, cmd, portMAX_DELAY) == pdPASS) {
+			if (strcmp(cmd, "on") == 0) {
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+
+				char msg[] = "LED ON\r\n";
+
+				xQueueSend(uart_write_queue, msg, portMAX_DELAY);
+			} else if (strcmp(cmd, "off") == 0) {
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+
+				char msg[] = "LED OFF\r\n";
+
+				xQueueSend(uart_write_queue, msg, portMAX_DELAY);
+			} else if (strcmp(cmd, "toggle") == 0) {
+				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+				char msg[] = "LED TOGGLED\r\n";
+
+				xQueueSend(uart_write_queue, msg, portMAX_DELAY);
+			} else {
+				char msg[] = "INVALID COMMAND\r\n";
+
+				xQueueSend(uart_write_queue, msg, portMAX_DELAY);
+			}
+		}
+	}
+}
+
+// Task 4 - Process command
+//void cmd_processing_task(void *parameters) {
+//	char cmd[64];
+//
+//	while (1) {
+//		if (xQueueReceive(command_queue, cmd, portMAX_DELAY) == pdPASS) {
+//			if (strcmp(cmd, "TOGGLE") == 0) {
+//				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//
+//				strcpy(uart_msg, "LED TOGGLED\r\n");
+//
+//				xQueueSend(uart_write_queue, uart_msg, portMAX_DELAY);
+//			}
+//		}
+//	}
+//}
+
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+
+	if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+	RCC_OscInitStruct.PLL.PLLM = 1;
+	RCC_OscInitStruct.PLL.PLLN = 10;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+	RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+	RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
+
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+static void MX_USART2_UART_Init(void) {
+
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	huart2.Init.StopBits = UART_STOPBITS_1;
+	huart2.Init.Parity = UART_PARITY_NONE;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+	huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+	if (HAL_UART_Init(&huart2) != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+int _write(int file, char *ptr, int len) {
+	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, HAL_MAX_DELAY);
+
+	return len;
+}
+
+static void MX_GPIO_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+
+	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+
+	GPIO_InitStruct.Pin = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = LD2_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+}
+
+void delay_blocking(volatile uint32_t count) {
+	while (count--) {
+	}
+}
+
+void Error_Handler(void) {
+	__disable_irq();
+	while (1) {
+	}
+}
+

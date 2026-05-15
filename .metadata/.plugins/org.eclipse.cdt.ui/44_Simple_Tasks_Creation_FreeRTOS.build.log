@@ -1,0 +1,17 @@
+09:30:55 **** Build of configuration Debug for project 44_Simple_Tasks_Creation_FreeRTOS ****
+make -j12 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32L476xx -c -I../Core/Inc -I../Drivers/STM32L4xx_HAL_Driver/Inc -I../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "44_Simple_Tasks_Creation_FreeRTOS.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\STM32\44_Simple_Tasks_Creation_FreeRTOS\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="44_Simple_Tasks_Creation_FreeRTOS.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 44_Simple_Tasks_Creation_FreeRTOS.elf
+ 
+arm-none-eabi-size  44_Simple_Tasks_Creation_FreeRTOS.elf 
+arm-none-eabi-objdump -h -S 44_Simple_Tasks_Creation_FreeRTOS.elf  > "44_Simple_Tasks_Creation_FreeRTOS.list"
+   text	   data	    bss	    dec	    hex	filename
+  21672	    112	   5976	  27760	   6c70	44_Simple_Tasks_Creation_FreeRTOS.elf
+Finished building: default.size.stdout
+ 
+Finished building: 44_Simple_Tasks_Creation_FreeRTOS.list
+ 
+
+09:30:57 Build Finished. 0 errors, 0 warnings. (took 1s.582ms)
+

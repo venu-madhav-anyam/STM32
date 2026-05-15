@@ -1,0 +1,238 @@
+#include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
+#include <stdio.h>
+#include <string.h>
+
+UART_HandleTypeDef huart2;
+
+/*
+ * Queue Handle
+ */
+QueueHandle_t xQueue;
+
+/*
+ * Function Prototypes
+ */
+void SystemClock_Config(void);
+
+static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
+
+void vSenderTask(void *params);
+void vReceiverTask(void *params);
+
+/*
+ * UART print function
+ */
+void printmsg(char *msg) {
+	HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg),
+	HAL_MAX_DELAY);
+}
+
+int main(void) {
+	HAL_Init();
+
+	SystemClock_Config();
+
+	MX_GPIO_Init();
+
+	MX_USART2_UART_Init();
+
+	/*
+	 * Create Queue
+	 * Queue length = 5
+	 * Item size = uint32_t
+	 */
+	xQueue = xQueueCreate(5, sizeof(uint32_t));
+
+	/*
+	 * Check Queue
+	 */
+	if (xQueue != NULL) {
+		/*
+		 * Create Sender Task
+		 */
+		xTaskCreate(vSenderTask, "SenderTask", 512,
+		NULL, 1,
+		NULL);
+
+		/*
+		 * Create Receiver Task
+		 */
+		xTaskCreate(vReceiverTask, "ReceiverTask", 512,
+		NULL, 1,
+		NULL);
+
+		/*
+		 * Start Scheduler
+		 */
+		vTaskStartScheduler();
+	}
+
+	while (1) {
+	}
+}
+
+/*
+ * Task 1
+ * Sends data into queue
+ */
+void vSenderTask(void *params) {
+	uint32_t count = 0;
+
+	char msg[50];
+
+	while (1) {
+		count++;
+
+		/*
+		 * Send data to queue
+		 */
+		xQueueSend(xQueue, &count, portMAX_DELAY);
+
+		sprintf(msg, "Sent : %lu\r\n", count);
+
+		printmsg(msg);
+
+		taskYIELD();
+		vTaskDelay(pdMS_TO_TICKS(1000));
+	}
+}
+
+/*
+ * Task 2
+ * Receives data from queue
+ */
+void vReceiverTask(void *params) {
+	uint32_t rx_data;
+
+	char msg[50];
+
+	while (1) {
+		/*
+		 * Wait for data
+		 */
+		if (xQueueReceive(xQueue, &rx_data,
+		portMAX_DELAY) == pdPASS) {
+			sprintf(msg, "Received : %lu\r\n", rx_data);
+
+			printmsg(msg);
+		}
+	}
+}
+
+/*
+ * USART2 Init
+ * PA2 -> TX
+ * PA3 -> RX
+ */
+static void MX_USART2_UART_Init(void) {
+	huart2.Instance = USART2;
+
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	huart2.Init.StopBits = UART_STOPBITS_1;
+	huart2.Init.Parity = UART_PARITY_NONE;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+
+	if (HAL_UART_Init(&huart2) != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+/*
+ * GPIO Init
+ */
+static void MX_GPIO_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+
+	/*
+	 * Enable GPIOA Clock
+	 */
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+
+	/*
+	 * Enable USART2 Clock
+	 */
+	__HAL_RCC_USART2_CLK_ENABLE();
+
+	/*
+	 * PA2 -> TX
+	 * PA3 -> RX
+	 */
+	GPIO_InitStruct.Pin =
+	GPIO_PIN_2 | GPIO_PIN_3;
+
+	GPIO_InitStruct.Mode =
+	GPIO_MODE_AF_PP;
+
+	GPIO_InitStruct.Pull =
+	GPIO_NOPULL;
+
+	GPIO_InitStruct.Speed =
+	GPIO_SPEED_FREQ_VERY_HIGH;
+
+	GPIO_InitStruct.Alternate =
+	GPIO_AF7_USART2;
+
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+/*
+ * System Clock
+ */
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+
+	HAL_PWREx_ControlVoltageScaling(
+	PWR_REGULATOR_VOLTAGE_SCALE1);
+
+	RCC_OscInitStruct.OscillatorType =
+	RCC_OSCILLATORTYPE_MSI;
+
+	RCC_OscInitStruct.MSIState =
+	RCC_MSI_ON;
+
+	RCC_OscInitStruct.MSIClockRange =
+	RCC_MSIRANGE_6;
+
+	RCC_OscInitStruct.PLL.PLLState =
+	RCC_PLL_NONE;
+
+	HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+	RCC_ClkInitStruct.ClockType =
+	RCC_CLOCKTYPE_HCLK |
+	RCC_CLOCKTYPE_SYSCLK |
+	RCC_CLOCKTYPE_PCLK1 |
+	RCC_CLOCKTYPE_PCLK2;
+
+	RCC_ClkInitStruct.SYSCLKSource =
+	RCC_SYSCLKSOURCE_MSI;
+
+	RCC_ClkInitStruct.AHBCLKDivider =
+	RCC_SYSCLK_DIV1;
+
+	RCC_ClkInitStruct.APB1CLKDivider =
+	RCC_HCLK_DIV1;
+
+	RCC_ClkInitStruct.APB2CLKDivider =
+	RCC_HCLK_DIV1;
+
+	HAL_RCC_ClockConfig(&RCC_ClkInitStruct,
+	FLASH_LATENCY_0);
+}
+
+void Error_Handler(void) {
+	__disable_irq();
+
+	while (1) {
+	}
+}
